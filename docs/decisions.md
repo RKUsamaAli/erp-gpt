@@ -42,12 +42,11 @@ scope are forbidden by construction.
 
 ## Open — needs a named owner and a date
 
-**O1 — MCP server vs Query Plan builder.**
-The call agreed "set up the MCP server"; the roadmap specifies a Query
-Plan → GraphQL builder and doesn't mention MCP. These are two mechanisms
-for the same job (constraining model → API invocation). Options:
-plan-only, MCP-only, or the plan nested inside one MCP tool. Building both
-independently is wasted work. **Decide before agent/ work starts.**
+**O1 — MCP vs Query Plan → RESOLVED (10 Aug call): no MCP this phase.**
+MCP's role was clarified as external actions (emails, notifications) and
+explicitly excluded from the current phase for simplicity. The orchestrator
+follows the roadmap's Query Plan → GraphQL builder design. Revisit MCP when
+action-taking features are scoped.
 
 **O2 — Who owns the Metadata Generator (roadmap step 2)?**
 Auto-extracts tables, FKs, types, GraphQL operations from the live system
@@ -60,8 +59,18 @@ The exact fields, operators, dateRange enums, and aggregation vocabulary.
 This is a three-way contract (prompts ↔ validator ↔ builder), so it needs
 one owner and a version number. Draft shape in agent/README.md.
 
-**O4 — Postgres vs SQL Server → PostgreSQL (pending team confirmation).**
+**O4 — Postgres vs SQL Server → RESOLVED (10 Aug call): PostgreSQL + pgvector.**
 Decisive: pgvector puts the RAG vector store inside the same instance as
 the ERP data — one service, one backup. Also free and Docker-identical on
 every machine. Implemented in api/ (pgvector/pgvector:pg16 compose image).
 Revisit only if existing SQL Server licenses/DBA expertise outweigh this.
+
+**O5 — Demo schema size: 10 entities today, call wants 15–20.**
+Close by extending the demo (candidates: Employees, Payments,
+PurchaseOrders, Warehouses, Returns, Shipments) or loading a real ERP
+export if sourced. Needs an owner and must settle BEFORE schema lock.
+
+**D8 — Retrieval favours recall over precision** (10 Aug call).
+Missing relevant KB entries is unacceptable; retrieve generously (top 3–5)
+and let the validator/model narrow. Affects eval: measure hit-rate at the
+chosen k.
