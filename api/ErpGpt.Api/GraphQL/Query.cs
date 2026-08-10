@@ -77,22 +77,36 @@ public class Query
         db.Orders.Where(o => o.Id == id);
 
     // ---------------------------------------------------------- ranking
+    // Pattern for ALL aggregations below: SQL does joins/filters/per-row math
+    // (what it translates well); the final GroupBy happens in memory (which
+    // EF cannot reliably translate when combined with Distinct().Count() and
+    // record constructors). At seed scale (~2k orders) this is instant; if
+    // data grows 100x, revisit with raw SQL views.
 
     [Semantic("Rank customers by total revenue in a date range. Use for any 'biggest/top/best customers' question. Excludes cancelled orders automatically.")]
     public async Task<List<CustomerRevenue>> GetTopCustomers(
         ErpDbContext db, DateOnly from, DateOnly to, int? limit = 10)
     {
         ValidateRange(from, to);
-        return await RevenueOrders(db, from, to)
-            .SelectMany(o => o.Lines, (o, l) => new { o.CustomerId, o.Customer.Name, Region = o.Customer.Region.Name, o.Id, Value = l.Quantity * l.UnitPrice })
-            .GroupBy(x => new { x.CustomerId, x.Name, x.Region })
+        var perOrder = await RevenueOrders(db, from, to)
+            .Select(o => new
+            {
+                o.Id,
+                o.CustomerId,
+                CustomerName = o.Customer.Name,
+                Region = o.Customer.Region.Name,
+                Total = o.Lines.Sum(l => l.Quantity * l.UnitPrice),
+            })
+            .ToListAsync(); // SQL ends here
+
+        return perOrder
+            .GroupBy(x => new { x.CustomerId, x.CustomerName, x.Region })
             .Select(g => new CustomerRevenue(
-                g.Key.CustomerId, g.Key.Name, g.Key.Region,
-                g.Sum(x => x.Value),
-                g.Select(x => x.Id).Distinct().Count()))
+                g.Key.CustomerId, g.Key.CustomerName, g.Key.Region,
+                g.Sum(x => x.Total), g.Count()))
             .OrderByDescending(c => c.TotalRevenue)
             .Take(Cap(limit))
-            .ToListAsync();
+            .ToList();
     }
 
     [Semantic("Rank products by revenue and units sold in a date range. Use for 'best selling / top products'. Excludes cancelled orders automatically.")]
@@ -100,16 +114,26 @@ public class Query
         ErpDbContext db, DateOnly from, DateOnly to, int? limit = 10)
     {
         ValidateRange(from, to);
-        return await RevenueOrders(db, from, to)
+        var perLine = await RevenueOrders(db, from, to)
             .SelectMany(o => o.Lines)
-            .GroupBy(l => new { l.ProductId, l.Product.Sku, l.Product.Name })
+            .Select(l => new
+            {
+                l.ProductId,
+                l.Product.Sku,
+                l.Product.Name,
+                l.Quantity,
+                Value = l.Quantity * l.UnitPrice,
+            })
+            .ToListAsync();
+
+        return perLine
+            .GroupBy(x => new { x.ProductId, x.Sku, x.Name })
             .Select(g => new ProductSales(
                 g.Key.ProductId, g.Key.Sku, g.Key.Name,
-                g.Sum(l => l.Quantity * l.UnitPrice),
-                g.Sum(l => l.Quantity)))
+                g.Sum(x => x.Value), g.Sum(x => x.Quantity)))
             .OrderByDescending(p => p.Revenue)
             .Take(Cap(limit))
-            .ToListAsync();
+            .ToList();
     }
 
     // ------------------------------------------------------ aggregation
@@ -119,20 +143,23 @@ public class Query
         ErpDbContext db, DateOnly from, DateOnly to, Interval interval = Interval.Month)
     {
         ValidateRange(from, to);
-        var lines = RevenueOrders(db, from, to)
-            .SelectMany(o => o.Lines, (o, l) => new { o.Id, o.OrderDate, Value = l.Quantity * l.UnitPrice });
-
-        var grouped = interval == Interval.Month
-            ? lines.GroupBy(x => new { x.OrderDate.Year, Period = x.OrderDate.Month })
-            : lines.GroupBy(x => new { x.OrderDate.Year, Period = (x.OrderDate.Month - 1) / 3 + 1 });
-
-        return await grouped
-            .Select(g => new PeriodRevenue(
-                g.Key.Year, g.Key.Period,
-                g.Sum(x => x.Value),
-                g.Select(x => x.Id).Distinct().Count()))
-            .OrderBy(p => p.Year).ThenBy(p => p.Period)
+        var perOrder = await RevenueOrders(db, from, to)
+            .Select(o => new
+            {
+                o.OrderDate,
+                Total = o.Lines.Sum(l => l.Quantity * l.UnitPrice),
+            })
             .ToListAsync();
+
+        return perOrder
+            .GroupBy(x => new
+            {
+                x.OrderDate.Year,
+                Period = interval == Interval.Month ? x.OrderDate.Month : (x.OrderDate.Month - 1) / 3 + 1,
+            })
+            .Select(g => new PeriodRevenue(g.Key.Year, g.Key.Period, g.Sum(x => x.Total), g.Count()))
+            .OrderBy(p => p.Year).ThenBy(p => p.Period)
+            .ToList();
     }
 
     [Semantic("Average order value per month over a date range. 'Basket size' questions come here. Cancelled orders excluded.")]
@@ -140,14 +167,20 @@ public class Query
         ErpDbContext db, DateOnly from, DateOnly to)
     {
         ValidateRange(from, to);
-        var perOrder = RevenueOrders(db, from, to)
-            .Select(o => new { o.OrderDate.Year, o.OrderDate.Month, Total = o.Lines.Sum(l => l.Quantity * l.UnitPrice) });
+        var perOrder = await RevenueOrders(db, from, to)
+            .Select(o => new
+            {
+                o.OrderDate.Year,
+                o.OrderDate.Month,
+                Total = o.Lines.Sum(l => l.Quantity * l.UnitPrice),
+            })
+            .ToListAsync();
 
-        return await perOrder
+        return perOrder
             .GroupBy(x => new { x.Year, x.Month })
             .Select(g => new PeriodAverage(g.Key.Year, g.Key.Month, g.Average(x => x.Total), g.Count()))
             .OrderBy(p => p.Year).ThenBy(p => p.Month)
-            .ToListAsync();
+            .ToList();
     }
 
     [Semantic("Revenue by sales region over a date range. Use for 'sales by region', 'which region sells the most'. Cancelled orders excluded.")]
@@ -155,15 +188,19 @@ public class Query
         ErpDbContext db, DateOnly from, DateOnly to)
     {
         ValidateRange(from, to);
-        return await RevenueOrders(db, from, to)
-            .SelectMany(o => o.Lines, (o, l) => new { o.Id, Region = o.Customer.Region.Name, Value = l.Quantity * l.UnitPrice })
-            .GroupBy(x => x.Region)
-            .Select(g => new RegionSales(
-                g.Key,
-                g.Sum(x => x.Value),
-                g.Select(x => x.Id).Distinct().Count()))
-            .OrderByDescending(r => r.Revenue)
+        var perOrder = await RevenueOrders(db, from, to)
+            .Select(o => new
+            {
+                Region = o.Customer.Region.Name,
+                Total = o.Lines.Sum(l => l.Quantity * l.UnitPrice),
+            })
             .ToListAsync();
+
+        return perOrder
+            .GroupBy(x => x.Region)
+            .Select(g => new RegionSales(g.Key, g.Sum(x => x.Total), g.Count()))
+            .OrderByDescending(r => r.Revenue)
+            .ToList();
     }
 
     // TODO next (same pattern; add kb/ file in the same PR):

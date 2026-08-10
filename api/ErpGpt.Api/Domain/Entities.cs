@@ -7,7 +7,7 @@ namespace ErpGpt.Api.Domain;
 /// drift the way a separate document would.
 /// Write them for a salesperson, not a developer.
 /// </summary>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Property | AttributeTargets.Field)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum | AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Method)]
 public sealed class SemanticAttribute(string meaning) : Attribute
 {
     public string Meaning { get; } = meaning;
