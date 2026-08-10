@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "erp-gpt/kb/_schema.json",
+  "title": "ERP GPT endpoint knowledge-base document",
+  "description": "Every file in kb/ (except this one) must validate against this schema. One file per GraphQL endpoint, named exactly after the endpoint: topCustomers.json documents topCustomers. CI enforces that every endpoint in the GraphQL schema has a matching KB file. RULE: no business data anywhere in these files — endpoint documentation only.",
+  "type": "object",
+  "required": ["endpoint", "description", "params", "example_questions", "graphql", "returns"],
+  "additionalProperties": false,
+  "properties": {
+    "endpoint": {
+      "type": "string",
+      "description": "Exact GraphQL field name, camelCase. Must match the schema.",
+      "pattern": "^[a-z][a-zA-Z0-9]*$"
+    },
+    "description": {
+      "type": "string",
+      "description": "One or two plain-English sentences: what this endpoint answers. Write for a salesperson, not a developer.",
+      "minLength": 20,
+      "maxLength": 300
+    },
+    "params": {
+      "type": "array",
+      "description": "Every parameter the endpoint accepts. Empty array if none.",
+      "items": {
+        "type": "object",
+        "required": ["name", "type"],
+        "additionalProperties": false,
+        "properties": {
+          "name":        { "type": "string" },
+          "type":        { "type": "string", "description": "GraphQL type, e.g. Int, Date, String, or an enum name" },
+          "required":    { "type": "boolean", "default": false },
+          "default":     { "description": "Default value if omitted" },
+          "values":      { "type": "array", "items": { "type": "string" }, "description": "Allowed values, for enums" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "example_questions": {
+      "type": "array",
+      "description": "THE HIGHEST-LEVERAGE FIELD IN THIS FILE. These are what get embedded — retrieval matches user questions against these, one vector each. Write them the way sales/finance people actually talk, not developer English. Include at least one Roman-Urdu phrasing where natural. Minimum 4, aim for 5-8.",
+      "minItems": 4,
+      "maxItems": 10,
+      "items": { "type": "string", "minLength": 10 }
+    },
+    "graphql": {
+      "type": "string",
+      "description": "A complete, valid example query using $variables for parameters. The model copies this shape."
+    },
+    "returns": {
+      "type": "string",
+      "description": "Plain-English description of what comes back, e.g. 'List of customer names with summed revenue'."
+    },
+    "do_not_use_when": {
+      "type": "string",
+      "description": "Disambiguation against sibling endpoints. If two endpoints could be confused (salesByRegion vs revenueByRegion), this field is how the model tells them apart. Name the endpoint to use instead."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Anything else the model needs: date format expectations, limit ceilings, timezone behaviour."
+    }
+  }
+}

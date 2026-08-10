@@ -1,0 +1,14 @@
+# Postgres with pgvector baked in — the reason Postgres won the DB decision:
+# the vector store for step 4 lives in the SAME instance as the ERP data.
+# Usage:  docker compose up -d
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: erpgpt
+      POSTGRES_USER: erpgpt
+      POSTGRES_PASSWORD: devonly
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+volumes:
+  pgdata:

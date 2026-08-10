@@ -1,0 +1,30 @@
+# .NET
+bin/
+obj/
+*.user
+appsettings.Development.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Vector DB / models
+qdrant_storage/
+*.gguf
+
+# Logs (step 13 output — local only until we decide retention)
+agent/logs/
+*.jsonl
+
+# Editors / OS
+.vs/
+.vscode/
+.idea/
+.DS_Store
+
+# Secrets — never commit
+*.env
+.env*
+secrets.json

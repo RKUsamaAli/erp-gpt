@@ -1,0 +1,48 @@
+flowchart TD
+
+    subgraph BUILD["ZONE A — BUILD TIME (rebuild only when endpoints change)"]
+        direction TB
+        S1["1 · Database<br/><i>tables, relations, indexes</i><br/>the only place real data lives"]
+        S2["2 · ASP.NET Core + GraphQL API<br/><i>10–20 endpoints</i><br/>filters · sorting · aggregations"]
+        S3["3 · Endpoint Knowledge Base<br/><i>one JSON per endpoint, in the repo</i><br/>description · params · example questions"]
+        S4["4 · Embed → Vector DB<br/><i>Qdrant / pgvector</i><br/>~20 vectors total"]
+
+        S1 -->|schema drives API surface| S2
+        S2 -->|every endpoint gets a doc| S3
+        S3 -->|ingestion script| S4
+    end
+
+    subgraph RUN["ZONE B — RUN TIME (every single question)"]
+        direction TB
+        S5["5 · User question<br/><i>'Top 5 customers by revenue this year'</i>"]
+        S6["6 · Embed the question<br/><i>same model as step 4</i>"]
+        S7["7 · Retrieve top-k endpoint docs<br/><b>this is RAG</b><br/>topCustomers 0.91 · customerRevenue 0.88"]
+        S8["8 · Assemble prompt<br/>SYSTEM + retrieved docs + question"]
+        S9["9 · Model writes GraphQL<br/><i>Llama 3.1 8B, local</i><br/>picks endpoint, fills params"]
+        S10{"10 · VALIDATION GATE<br/>parses? · fields exist?<br/>user authorised? · params safe?"}
+        S11["11 · Execute against API<br/><i>live rows, fetched fresh</i>"]
+        S12["12 · Model writes the answer<br/><i>summarises returned rows only</i>"]
+        S13["13 · Log question + query + outcome"]
+
+        S5 --> S6 --> S7 --> S8 --> S9 --> S10
+        S10 -->|FAIL — retry once with error| S9
+        S10 -->|PASS| S11 --> S12 --> S13
+    end
+
+    S4 -.->|vector index ready| S7
+    S2 -.->|executes here| S11
+    S11 -.->|reads| S1
+
+    S13 -.->|wrong endpoint chosen?| S3
+    S13 -.->|eval set| EVAL["50 test questions<br/>build this in Phase 2"]
+    S13 -.->|Phase 5, only if needed| LORA["LoRA / QLoRA<br/><i>format, not facts</i>"]
+
+    classDef build fill:#E4EEEC,stroke:#1F6E68,stroke-width:1.5px,color:#12222E
+    classDef run fill:#F4ECDC,stroke:#B07C1E,stroke-width:1.5px,color:#12222E
+    classDef gate fill:#F6E4DF,stroke:#9E3B28,stroke-width:2.5px,color:#12222E
+    classDef later fill:#F5F7F3,stroke:#8A99A2,stroke-width:1px,stroke-dasharray:4 3,color:#51636E
+
+    class S1,S2,S3,S4 build
+    class S5,S6,S7,S8,S9,S11,S12,S13 run
+    class S10 gate
+    class EVAL,LORA later

@@ -1,0 +1,21 @@
+id,question,expected_endpoint,notes
+1,who are our biggest customers this year,topCustomers,
+2,top 5 clients by sales last quarter,topCustomers,
+3,which products sell the most,topProducts,
+4,show me all orders from March,orders,filter by date range
+5,how much revenue did we make each month this year,revenueByPeriod,
+6,what's our average order value by region,averageOrderValue,
+7,compare this quarter's sales to last quarter,periodComparison,
+8,which supplier did we spend the most with,topSuppliers,
+9,show me details for Acme Ltd,customerDetail,named single customer
+10,what's the total value of stock we're holding,stockValuation,
+11,which invoices are overdue by more than 60 days,outstandingByAge,
+12,list all products in the electronics category,products,filter by category
+13,sales trend for the last 12 months,salesTrend,
+14,which region is growing fastest,growthByCategory,ambiguous — region vs category worth testing
+15,sab se baray customers kaun hain,topCustomers,Roman-Urdu phrasing
+16,how many orders did we get last week,orders,count — tests aggregation vs list boundary
+17,which accounts bring in the most money,topCustomers,no shared vocabulary with endpoint name
+18,average basket size excluding cancelled orders,averageOrderValue,tests exclusion param
+19,show stock movements for product SKU-1042,stockItems,may need stockMovement endpoint — flags a gap
+20,how are we doing this month,AMBIGUOUS,should trigger clarifying question not retrieval

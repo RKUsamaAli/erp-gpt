@@ -1,0 +1,23 @@
+{
+  "endpoint": "topCustomers",
+  "description": "Ranks customers by total revenue within a date range. Use for any 'biggest / best / top customers' style question.",
+  "params": [
+    { "name": "limit",   "type": "Int",  "required": false, "default": 10, "description": "How many customers to return, capped server-side at 100" },
+    { "name": "from",    "type": "Date", "required": true,  "description": "Start of the date range, YYYY-MM-DD" },
+    { "name": "to",      "type": "Date", "required": true,  "description": "End of the date range, YYYY-MM-DD" },
+    { "name": "orderBy", "type": "CustomerOrder", "required": false, "default": "REVENUE_DESC", "values": ["REVENUE_DESC", "REVENUE_ASC"], "description": "Sort direction" }
+  ],
+  "example_questions": [
+    "who are our biggest customers this year",
+    "top 5 clients by sales",
+    "which accounts bring in the most money",
+    "rank customers by revenue for Q2",
+    "show me our best customers last month",
+    "sab se baray customers kaun hain",
+    "hamara sab se bara client kaun hai revenue ke hisaab se"
+  ],
+  "graphql": "query TopCustomers($limit: Int, $from: Date!, $to: Date!, $orderBy: CustomerOrder) { topCustomers(limit: $limit, from: $from, to: $to, orderBy: $orderBy) { name totalRevenue orderCount } }",
+  "returns": "List of customer names with summed revenue and order count for the period, highest first.",
+  "do_not_use_when": "The user names one specific customer — use customerDetail instead. The user asks about revenue over time rather than a ranking — use revenueByPeriod.",
+  "notes": "If the user says 'this year' resolve to Jan 1 of the current year through today. 'Last quarter' means the previous complete calendar quarter."
+}

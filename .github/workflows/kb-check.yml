@@ -1,0 +1,58 @@
+name: KB integrity
+
+# Prevents KB drift: the failure mode where someone renames a param in C#,
+# forgets the JSON, and the AI starts confidently calling endpoints that no
+# longer exist — which then looks like a model bug instead of housekeeping.
+
+on:
+  pull_request:
+    paths: ["kb/**", "api/**"]
+  push:
+    branches: [main]
+
+jobs:
+  validate-kb:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install jsonschema
+        run: pip install jsonschema
+
+      - name: Every KB file validates against _schema.json
+        run: |
+          python - <<'EOF'
+          import json, sys
+          from pathlib import Path
+          from jsonschema import validate, ValidationError
+
+          kb = Path("kb")
+          schema = json.loads((kb / "_schema.json").read_text())
+          failed = False
+
+          for f in sorted(kb.glob("*.json")):
+              if f.name.startswith("_"):
+                  continue
+              doc = json.loads(f.read_text())
+              try:
+                  validate(doc, schema)
+              except ValidationError as e:
+                  print(f"FAIL {f.name}: {e.message}")
+                  failed = True
+                  continue
+              if doc["endpoint"] != f.stem:
+                  print(f"FAIL {f.name}: filename must match endpoint '{doc['endpoint']}'")
+                  failed = True
+              else:
+                  print(f"ok   {f.name}")
+
+          sys.exit(1 if failed else 0)
+          EOF
+
+      # TODO (once the API builds in CI): introspect the GraphQL schema and
+      # assert every query field has a matching kb/<field>.json — and vice
+      # versa. Until then the filename check above is the enforcement.
