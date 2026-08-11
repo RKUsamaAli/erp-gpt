@@ -35,7 +35,8 @@ We use **AdventureWorks** — a realistic ERP dataset: 31,465 sales orders,
 (sales, production, purchasing, person, humanresources).
 
 ```bash
-curl -LO https://github.com/HammadRehmanAwan/erp-gpt/releases/download/data-v1/adventureworks.dump
+# Requires GitHub CLI (brew install gh) authenticated once: gh auth login
+gh release download data-v1 --repo HammadRehmanAwan/erp-gpt --pattern adventureworks.dump
 docker cp adventureworks.dump api-db-1:/tmp/
 docker exec api-db-1 pg_restore -U erpgpt -d erpgpt --clean --if-exists /tmp/adventureworks.dump
 ```
