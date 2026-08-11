@@ -47,10 +47,7 @@ normal (it tries to drop objects that don't exist yet) — ignore them.
 **Verify it worked:**
 
 ```bash
-docker exec api-db-1 psql -U erpgpt -d erpgpt -P pager=off -c \
-"SELECT (SELECT count(*) FROM sales.salesorderheader) AS orders,
-        (SELECT count(*) FROM sales.customer)        AS customers,
-        (SELECT count(*) FROM production.product)    AS products;"
+docker exec api-db-1 psql -U erpgpt -d erpgpt -P pager=off -c "SELECT (SELECT count(*) FROM sales.salesorderheader) AS orders, (SELECT count(*) FROM sales.customer) AS customers, (SELECT count(*) FROM production.product) AS products;"
 ```
 
 Expected: `31465 | 19820 | 504`. Different numbers mean the restore didn't
