@@ -1,0 +1,212 @@
+# Click 'Send Request' above any block (VS Code REST Client / JetBrains).
+# Change @host to point somewhere else.
+
+@host = http://localhost:5000
+
+### Browse — customers
+# Page + filter + sort + column selection. `displayName` resolves the store or person name.
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query Customers($take: Int!, $region: String!) { customers(skip: 0, take: $take, where: { territory: { name: { eq: $region } } }, order: [{ customerId: ASC }]) { totalCount items { customerId displayName isStore territory { name group } } } }",
+  "variables": {
+    "take": 3,
+    "region": "Canada"
+  }
+}
+
+### Browse — orders
+# Every ability at once: page, WHERE, sort, chosen columns, and two levels of includes.
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query Orders($minTotal: Decimal!) { orders(skip: 0, take: 2, where: { totalDue: { gt: $minTotal } }, order: [{ totalDue: DESC }]) { totalCount items { salesOrderId orderDate totalDue customer { displayName territory { name } } lines { orderQty unitPrice lineTotal product { name productNumber } } } } }",
+  "variables": {
+    "minTotal": 10000
+  }
+}
+
+### Browse — orderLines
+# Order lines on their own. This is how you get every line for a product (the `product.orderLines` navigation is deliberately not exposed).
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query OrderLines($productId: Int!) { orderLines(take: 3, where: { productId: { eq: $productId } }, order: [{ salesOrderId: ASC }]) { totalCount items { salesOrderId salesOrderDetailId orderQty unitPrice unitPriceDiscount lineTotal } } }",
+  "variables": {
+    "productId": 782
+  }
+}
+
+### Browse — products
+# Compound WHERE using `and`, reaching two relationships deep into category.
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query Products { products(take: 3, where: { and: [{ listPrice: { gte: 500 } }, { listPrice: { lte: 1500 } }, { subcategory: { category: { name: { eq: \"Bikes\" } } } }] }, order: [{ listPrice: ASC }]) { totalCount items { productId name productNumber color listPrice standardCost isCurrentlySold subcategory { name category { name } } } } }"
+}
+
+### Browse — productCategories
+# The four categories with their subcategories — useful for building filter dropdowns.
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query Categories { productCategories { totalCount items { productCategoryId name subcategories { productSubcategoryId name } } } }"
+}
+
+### Browse — territories
+# The ten sales regions.
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query Territories { territories(order: [{ name: ASC }]) { totalCount items { territoryId name countryRegionCode group salesYtd } } }"
+}
+
+### Browse — salesPeople
+# The sales team. Names come through the `person` relationship.
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query SalesPeople { salesPeople(take: 3, order: [{ businessEntityId: ASC }]) { totalCount items { businessEntityId person { fullName } territory { name } salesQuota commissionPct } } }"
+}
+
+### Detail — customer(id)
+# One customer with their full order history.
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query Customer($id: Int!) { customer(id: $id) { customerId displayName isStore territory { name group } orders { salesOrderId orderDate totalDue } } }",
+  "variables": {
+    "id": 29641
+  }
+}
+
+### Detail — order(id)
+# One order with every line and the product on it.
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query Order($id: Int!) { order(id: $id) { salesOrderId orderDate status onlineOrderFlag subTotal taxAmt freight totalDue customer { displayName } lines { orderQty unitPrice lineTotal product { name productNumber } } } }",
+  "variables": {
+    "id": 51131
+  }
+}
+
+### Detail — product(id)
+# One product with pricing and category.
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query Product($id: Int!) { product(id: $id) { productId name productNumber color size listPrice standardCost isCurrentlySold subcategory { name category { name } } } }",
+  "variables": {
+    "id": 782
+  }
+}
+
+### Aggregation — salesSummary
+# The headline numbers. This is the 'how much did we sell' endpoint.
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query Summary($from: LocalDate!, $to: LocalDate!) { salesSummary(from: $from, to: $to) { totalRevenue orderCount averageOrderValue customerCount from to } }",
+  "variables": {
+    "from": "2024-01-01",
+    "to": "2024-12-31"
+  }
+}
+
+### Aggregation — topCustomers
+# Biggest customers by revenue. `limit` is clamped to 100.
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query TopCustomers($from: LocalDate!, $to: LocalDate!, $limit: Int!) { topCustomers(from: $from, to: $to, limit: $limit) { customerId customerName territory revenue orderCount } }",
+  "variables": {
+    "from": "2024-01-01",
+    "to": "2024-12-31",
+    "limit": 3
+  }
+}
+
+### Aggregation — topProducts
+# Best sellers by revenue and units, net of line discounts.
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query TopProducts($from: LocalDate!, $to: LocalDate!, $limit: Int!) { topProducts(from: $from, to: $to, limit: $limit) { productId productName productNumber category revenue unitsSold } }",
+  "variables": {
+    "from": "2024-01-01",
+    "to": "2024-12-31",
+    "limit": 3
+  }
+}
+
+### Aggregation — revenueByPeriod
+# Trend over time. `interval` accepts MONTH, QUARTER or YEAR.
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query Trend($from: LocalDate!, $to: LocalDate!, $interval: Interval!) { revenueByPeriod(from: $from, to: $to, interval: $interval) { year period label revenue orderCount } }",
+  "variables": {
+    "from": "2024-01-01",
+    "to": "2024-12-31",
+    "interval": "QUARTER"
+  }
+}
+
+### Aggregation — salesByTerritory
+# Which region sells the most.
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query ByTerritory($from: LocalDate!, $to: LocalDate!) { salesByTerritory(from: $from, to: $to) { territoryId territory group revenue orderCount } }",
+  "variables": {
+    "from": "2024-01-01",
+    "to": "2024-12-31"
+  }
+}
+
+### Aggregation — salesByCategory
+# Revenue split across the four product categories.
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query ByCategory($from: LocalDate!, $to: LocalDate!) { salesByCategory(from: $from, to: $to) { categoryId category revenue unitsSold } }",
+  "variables": {
+    "from": "2024-01-01",
+    "to": "2024-12-31"
+  }
+}
+
+### Errors — page cap exceeded
+# Asking for more than 100 rows is refused rather than silently truncated.
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query TooBig { orders(take: 500) { items { salesOrderId } } }"
+}
+
+### Errors — invalid date range
+# Reversed dates return a coded error saying exactly how to fix it.
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query BadRange { salesSummary(from: \"2025-01-01\", to: \"2024-01-01\") { totalRevenue } }"
+}
