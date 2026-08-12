@@ -1,0 +1,609 @@
+{
+  "info": {
+    "name": "ErpGpt.GraphQLApi",
+    "description": "Read-only GraphQL API over the AdventureWorks ERP database. 16 endpoints: 7 browse, 3 detail, 6 aggregation.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    }
+  ],
+  "item": [
+    {
+      "name": "Browse",
+      "item": [
+        {
+          "name": "customers",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query Customers($take: Int!, $region: String!) { customers(skip: 0, take: $take, where: { territory: { name: { eq: $region } } }, order: [{ customerId: ASC }]) { totalCount items { customerId displayName isStore territory { name group } } } }\",\n  \"variables\": {\n    \"take\": 3,\n    \"region\": \"Canada\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "description": "Page + filter + sort + column selection. `displayName` resolves the store or person name."
+          }
+        },
+        {
+          "name": "orders",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query Orders($minTotal: Decimal!) { orders(skip: 0, take: 2, where: { totalDue: { gt: $minTotal } }, order: [{ totalDue: DESC }]) { totalCount items { salesOrderId orderDate totalDue customer { displayName territory { name } } lines { orderQty unitPrice lineTotal product { name productNumber } } } } }\",\n  \"variables\": {\n    \"minTotal\": 10000\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "description": "Every ability at once: page, WHERE, sort, chosen columns, and two levels of includes."
+          }
+        },
+        {
+          "name": "orderLines",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query OrderLines($productId: Int!) { orderLines(take: 3, where: { productId: { eq: $productId } }, order: [{ salesOrderId: ASC }]) { totalCount items { salesOrderId salesOrderDetailId orderQty unitPrice unitPriceDiscount lineTotal } } }\",\n  \"variables\": {\n    \"productId\": 782\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "description": "Order lines on their own. This is how you get every line for a product (the `product.orderLines` navigation is deliberately not exposed)."
+          }
+        },
+        {
+          "name": "products",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query Products { products(take: 3, where: { and: [{ listPrice: { gte: 500 } }, { listPrice: { lte: 1500 } }, { subcategory: { category: { name: { eq: \\\"Bikes\\\" } } } }] }, order: [{ listPrice: ASC }]) { totalCount items { productId name productNumber color listPrice standardCost isCurrentlySold subcategory { name category { name } } } } }\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "description": "Compound WHERE using `and`, reaching two relationships deep into category."
+          }
+        },
+        {
+          "name": "productCategories",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query Categories { productCategories { totalCount items { productCategoryId name subcategories { productSubcategoryId name } } } }\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "description": "The four categories with their subcategories \u2014 useful for building filter dropdowns."
+          }
+        },
+        {
+          "name": "territories",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query Territories { territories(order: [{ name: ASC }]) { totalCount items { territoryId name countryRegionCode group salesYtd } } }\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "description": "The ten sales regions."
+          }
+        },
+        {
+          "name": "salesPeople",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query SalesPeople { salesPeople(take: 3, order: [{ businessEntityId: ASC }]) { totalCount items { businessEntityId person { fullName } territory { name } salesQuota commissionPct } } }\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "description": "The sales team. Names come through the `person` relationship."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Detail",
+      "item": [
+        {
+          "name": "customer(id)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query Customer($id: Int!) { customer(id: $id) { customerId displayName isStore territory { name group } orders { salesOrderId orderDate totalDue } } }\",\n  \"variables\": {\n    \"id\": 29641\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "description": "One customer with their full order history."
+          }
+        },
+        {
+          "name": "order(id)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query Order($id: Int!) { order(id: $id) { salesOrderId orderDate status onlineOrderFlag subTotal taxAmt freight totalDue customer { displayName } lines { orderQty unitPrice lineTotal product { name productNumber } } } }\",\n  \"variables\": {\n    \"id\": 51131\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "description": "One order with every line and the product on it."
+          }
+        },
+        {
+          "name": "product(id)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query Product($id: Int!) { product(id: $id) { productId name productNumber color size listPrice standardCost isCurrentlySold subcategory { name category { name } } } }\",\n  \"variables\": {\n    \"id\": 782\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "description": "One product with pricing and category."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Aggregation",
+      "item": [
+        {
+          "name": "salesSummary",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query Summary($from: LocalDate!, $to: LocalDate!) { salesSummary(from: $from, to: $to) { totalRevenue orderCount averageOrderValue customerCount from to } }\",\n  \"variables\": {\n    \"from\": \"2024-01-01\",\n    \"to\": \"2024-12-31\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "description": "The headline numbers. This is the 'how much did we sell' endpoint."
+          }
+        },
+        {
+          "name": "topCustomers",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query TopCustomers($from: LocalDate!, $to: LocalDate!, $limit: Int!) { topCustomers(from: $from, to: $to, limit: $limit) { customerId customerName territory revenue orderCount } }\",\n  \"variables\": {\n    \"from\": \"2024-01-01\",\n    \"to\": \"2024-12-31\",\n    \"limit\": 3\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "description": "Biggest customers by revenue. `limit` is clamped to 100."
+          }
+        },
+        {
+          "name": "topProducts",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query TopProducts($from: LocalDate!, $to: LocalDate!, $limit: Int!) { topProducts(from: $from, to: $to, limit: $limit) { productId productName productNumber category revenue unitsSold } }\",\n  \"variables\": {\n    \"from\": \"2024-01-01\",\n    \"to\": \"2024-12-31\",\n    \"limit\": 3\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "description": "Best sellers by revenue and units, net of line discounts."
+          }
+        },
+        {
+          "name": "revenueByPeriod",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query Trend($from: LocalDate!, $to: LocalDate!, $interval: Interval!) { revenueByPeriod(from: $from, to: $to, interval: $interval) { year period label revenue orderCount } }\",\n  \"variables\": {\n    \"from\": \"2024-01-01\",\n    \"to\": \"2024-12-31\",\n    \"interval\": \"QUARTER\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "description": "Trend over time. `interval` accepts MONTH, QUARTER or YEAR."
+          }
+        },
+        {
+          "name": "salesByTerritory",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query ByTerritory($from: LocalDate!, $to: LocalDate!) { salesByTerritory(from: $from, to: $to) { territoryId territory group revenue orderCount } }\",\n  \"variables\": {\n    \"from\": \"2024-01-01\",\n    \"to\": \"2024-12-31\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "description": "Which region sells the most."
+          }
+        },
+        {
+          "name": "salesByCategory",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query ByCategory($from: LocalDate!, $to: LocalDate!) { salesByCategory(from: $from, to: $to) { categoryId category revenue unitsSold } }\",\n  \"variables\": {\n    \"from\": \"2024-01-01\",\n    \"to\": \"2024-12-31\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "description": "Revenue split across the four product categories."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Errors",
+      "item": [
+        {
+          "name": "page cap exceeded",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query TooBig { orders(take: 500) { items { salesOrderId } } }\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "description": "Asking for more than 100 rows is refused rather than silently truncated."
+          }
+        },
+        {
+          "name": "invalid date range",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query BadRange { salesSummary(from: \\\"2025-01-01\\\", to: \\\"2024-01-01\\\") { totalRevenue } }\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "description": "Reversed dates return a coded error saying exactly how to fix it."
+          }
+        }
+      ]
+    },
+    {
+      "name": "health",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
+        },
+        "description": "Liveness probe \u2014 also proves the database is reachable."
+      }
+    }
+  ]
+}
