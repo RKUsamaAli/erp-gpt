@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Execution Flow — ERP GPT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-0: #e8eaed;
+      --border: rgba(60, 72, 88, 0.14);
+      --text: #1a2330;
+      --text-muted: #6b7788;
+      --accent: #2f8a7e;
+      --accent-soft: rgba(47, 138, 126, 0.12);
+      --font: "DM Sans", "Segoe UI", "Calibri", sans-serif;
+      --display: "Source Sans 3", "Calibri", "Segoe UI", sans-serif;
+      --sidebar-width: 260px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--bg-0);
+      overflow: hidden;
+    }
+
+    .shell {
+      height: 100%;
+      max-height: 100vh;
+      display: grid;
+      grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      height: 100%;
+      border-right: 1px solid var(--border);
+      background: #f3f4f6;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .sidebar-top {
+      padding: 16px 14px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      padding: 0 4px 6px;
+    }
+
+    .sidebar-brand h1 {
+      font-family: var(--display);
+      font-size: 1.45rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .sidebar-brand span {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .nav-btn {
+      appearance: none;
+      display: block;
+      width: 100%;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text);
+      font: inherit;
+      font-size: 0.88rem;
+      font-weight: 500;
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      text-align: left;
+      text-decoration: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .nav-btn.active {
+      background: #fff;
+      border-color: var(--border);
+      box-shadow: 0 1px 2px rgba(40, 50, 65, 0.06);
+    }
+
+    .nav-btn.primary {
+      border-color: var(--border);
+      background: #fff;
+    }
+
+    .nav-btn.primary:hover {
+      border-color: rgba(47, 138, 126, 0.4);
+      background: var(--accent-soft);
+    }
+
+    .app {
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      max-width: 820px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 16px;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    header {
+      padding: 20px 8px 12px;
+    }
+
+    .page-title {
+      font-family: var(--display);
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+
+    .page-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .content {
+      overflow-y: auto;
+      min-height: 0;
+      padding: 8px 4px 28px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .content::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .content::-webkit-scrollbar-thumb {
+      background: rgba(60, 72, 88, 0.22);
+      border-radius: 8px;
+    }
+
+    .flow-view {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 8px 8px 28px;
+    }
+
+    .flow-intro {
+      margin-bottom: 18px;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .flow-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 8px 18px;
+    }
+
+    .steps {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 14px 0;
+      position: relative;
+    }
+
+    .step:not(:last-child)::before {
+      content: "";
+      position: absolute;
+      left: 13px;
+      top: 40px;
+      bottom: -2px;
+      width: 1px;
+      background: rgba(60, 72, 88, 0.16);
+    }
+
+    .step-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(47, 138, 126, 0.35);
+      background: var(--accent-soft);
+      display: grid;
+      place-items: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #1f6f65;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-body {
+      min-width: 0;
+      padding-top: 3px;
+    }
+
+    .step-label {
+      font-size: 0.95rem;
+      line-height: 1.4;
+      font-weight: 600;
+    }
+
+    .step-detail {
+      margin-top: 4px;
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .step-example {
+      margin-top: 10px;
+      border: 1px solid var(--border);
+      background: #f8f9fb;
+      border-radius: 12px;
+      padding: 10px 12px;
+      overflow: hidden;
+    }
+
+    .step-example-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .step-example-query {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+
+    .step-example pre {
+      margin: 0;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.75rem;
+      line-height: 1.5;
+      color: #2a3544;
+      white-space: pre;
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+      }
+
+      .sidebar {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar" aria-label="Navigation">
+      <div class="sidebar-top">
+        <div class="sidebar-brand">
+          <h1>ERP GPT</h1>
+          <span>Demo</span>
+        </div>
+        <a class="nav-btn active" href="execution-flow.html" aria-current="page">Execution Flow</a>
+        <a class="nav-btn primary" href="index.html">← Back to chat</a>
+      </div>
+    </aside>
+
+    <div class="app">
+      <header>
+        <div class="page-title">Execution Flow</div>
+        <div class="page-sub">How a query is processed end to end</div>
+      </header>
+
+      <main class="content" id="flowRoot"></main>
+    </div>
+  </div>
+
+  <script>
+    const pipelineSteps = [
+      {
+        label: "Sending user query to ASP.NET API",
+        detail: "POST /api/chat with the natural-language question",
+        example: {
+          label: "Example user query",
+          query: "Show top 5 customers by revenue this quarter"
+        }
+      },
+      {
+        label: "Fetching matching embeddings from RAG vector database",
+        detail: "Embeddings include GraphQL endpoint details to execute. Top matching candidates are returned with similarity scores.",
+        example: {
+          label: "Example embeddings response",
+          query: "Show top 5 customers by revenue this quarter",
+          json: `{
+  "query": "Show top 5 customers by revenue this quarter",
+  "candidates": [
+    {
+      "executionId": "GET_TOP_CUSTOMERS_BY_SALES",
+      "score": 0.94
+    },
+    {
+      "executionId": "GET_TOP_CUSTOMERS_BY_PROFIT",
+      "score": 0.79
+    },
+    {
+      "executionId": "GET_CUSTOMER_SALES_SUMMARY",
+      "score": 0.74
+    }
+  ]
+}`
+        }
+      },
+      {
+        label: "Sending question and top matching embeddings to AI model",
+        detail: "Passing top 3–5 embedding candidates with the user question",
+        example: {
+          label: "Example payload to AI",
+          json: `{
+  "question": "Show top 5 customers by revenue this quarter",
+  "candidates": [
+    "GET_TOP_CUSTOMERS_BY_SALES",
+    "GET_TOP_CUSTOMERS_BY_PROFIT",
+    "GET_CUSTOMER_SALES_SUMMARY"
+  ]
+}`
+        }
+      },
+      {
+        label: "AI evaluates question and selects the best embedding",
+        detail: "Chooses GraphQL endpoint and fills parameters from the question",
+        example: {
+          label: "Example selection",
+          json: `{
+  "selectedExecutionId": "GET_TOP_CUSTOMERS_BY_SALES",
+  "reason": "Highest semantic match for top customers by revenue",
+  "parameters": {
+    "take": 5,
+    "period": "this_quarter",
+    "metric": "revenue"
+  }
+}`
+        }
+      },
+      {
+        label: "AI returns a crafted GraphQL payload",
+        detail: "Query + variables evaluated from the user question",
+        example: {
+          label: "Example GraphQL payload",
+          json: `{
+  "query": "query TopCustomers($take: Int!, $from: LocalDate!, $to: LocalDate!) { topCustomers(take: $take, from: $from, to: $to) { customerId displayName totalSales } }",
+  "variables": {
+    "take": 5,
+    "from": "2026-01-01",
+    "to": "2026-03-31"
+  }
+}`
+        }
+      },
+      {
+        label: "Schema Validation Engine",
+        detail: "Validates the crafted GraphQL payload against the API schema — field names, argument types, required variables, and cost/depth limits — before execution.",
+        example: {
+          label: "Example validation result",
+          json: `{
+  "valid": true,
+  "executionId": "GET_TOP_CUSTOMERS_BY_SALES",
+  "checks": [
+    "operation exists in schema",
+    "variable types match (Int, LocalDate)",
+    "required arguments present",
+    "query cost within limit"
+  ],
+  "errors": []
+}`
+        }
+      },
+      {
+        label: "API executing the GraphQL endpoint",
+        detail: "Running payload against the AdventureWorks GraphQL API",
+        example: {
+          label: "Example request",
+          json: `POST http://localhost:5000/graphql
+Content-Type: application/json
+
+{ "query": "...", "variables": { "take": 5, ... } }`
+        }
+      },
+      {
+        label: "Audit and Log",
+        detail: "Records the question, selected embedding, GraphQL payload, validation outcome, and result for RAG tuning and model training improvement.",
+        example: {
+          label: "Example audit log entry",
+          json: `{
+  "query": "Show top 5 customers by revenue this quarter",
+  "selectedExecutionId": "GET_TOP_CUSTOMERS_BY_SALES",
+  "candidateScores": [0.94, 0.79, 0.74],
+  "validation": "passed",
+  "latencyMs": 842,
+  "feedback": null,
+  "usedFor": ["rag_retraining", "model_eval"]
+}`
+        }
+      },
+      {
+        label: "Sending response back to UI",
+        detail: "API returns structured result data to the client",
+        example: {
+          label: "Example API response",
+          json: `{
+  "data": {
+    "topCustomers": [
+      { "displayName": "Adventure Works Cycle", "totalSales": 248420 },
+      { "displayName": "Metropolitan Bike Supply", "totalSales": 191055 }
+    ]
+  }
+}`
+        }
+      },
+      {
+        label: "UI formatting and rendering results",
+        detail: "Preparing tables and summary text for the answer pane",
+        example: {
+          label: "Example rendered result",
+          query: "Top 5 customers table with territory and revenue columns"
+        }
+      }
+    ];
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function renderStepExample(example) {
+      if (!example) return "";
+      const queryHtml = example.query
+        ? `<div class="step-example-query">${escapeHtml(example.query)}</div>`
+        : "";
+      const jsonHtml = example.json
+        ? `<pre>${escapeHtml(example.json)}</pre>`
+        : "";
+      return `
+        <div class="step-example">
+          <div class="step-example-label">${escapeHtml(example.label || "Example")}</div>
+          ${queryHtml}
+          ${jsonHtml}
+        </div>`;
+    }
+
+    document.getElementById("flowRoot").innerHTML = `
+      <div class="flow-view">
+        <p class="flow-intro">These are the steps ERP GPT runs behind the scenes for every chat question — from the ASP.NET API through RAG embeddings, AI payload crafting, GraphQL execution, and UI rendering.</p>
+        <div class="flow-card">
+          <ol class="steps">
+            ${pipelineSteps
+              .map(
+                (step, i) => `
+              <li class="step">
+                <div class="step-mark">${i + 1}</div>
+                <div class="step-body">
+                  <div class="step-label">${escapeHtml(step.label)}</div>
+                  <div class="step-detail">${escapeHtml(step.detail)}</div>
+                  ${renderStepExample(step.example)}
+                </div>
+              </li>`
+              )
+              .join("")}
+          </ol>
+        </div>
+      </div>`;
+  </script>
+</body>
+</html>
