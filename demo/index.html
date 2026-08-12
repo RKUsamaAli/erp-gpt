@@ -92,6 +92,7 @@
 
     .nav-btn {
       appearance: none;
+      display: block;
       width: 100%;
       border: 1px solid transparent;
       background: transparent;
@@ -103,6 +104,7 @@
       border-radius: 12px;
       cursor: pointer;
       text-align: left;
+      text-decoration: none;
       transition: border-color 0.2s, background 0.2s, color 0.2s;
     }
 
@@ -213,14 +215,6 @@
       padding: 0 16px;
       min-width: 0;
       min-height: 0;
-    }
-
-    .app.flow-mode {
-      grid-template-rows: auto 1fr;
-    }
-
-    .app.flow-mode .composer-wrap {
-      display: none;
     }
 
     header {
@@ -430,121 +424,6 @@
     .dots i:nth-child(2) { animation-delay: 0.15s; }
     .dots i:nth-child(3) { animation-delay: 0.3s; }
 
-    .flow-view {
-      max-width: 640px;
-      margin: 0 auto;
-      padding: 8px 8px 28px;
-      animation: fadeUp 0.35s ease both;
-    }
-
-    .flow-intro {
-      margin-bottom: 18px;
-      color: var(--text-muted);
-      font-size: 0.92rem;
-      line-height: 1.5;
-    }
-
-    .flow-card {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 8px 18px;
-    }
-
-    .steps {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .step {
-      display: grid;
-      grid-template-columns: 28px 1fr;
-      gap: 12px;
-      align-items: start;
-      padding: 14px 0;
-      position: relative;
-    }
-
-    .step:not(:last-child)::before {
-      content: "";
-      position: absolute;
-      left: 13px;
-      top: 40px;
-      bottom: -2px;
-      width: 1px;
-      background: rgba(60, 72, 88, 0.16);
-    }
-
-    .step-mark {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      border: 1.5px solid rgba(47, 138, 126, 0.35);
-      background: var(--accent-soft);
-      display: grid;
-      place-items: center;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: #1f6f65;
-      position: relative;
-      z-index: 1;
-    }
-
-    .step-body {
-      min-width: 0;
-      padding-top: 3px;
-    }
-
-    .step-label {
-      font-size: 0.95rem;
-      line-height: 1.4;
-      font-weight: 600;
-    }
-
-    .step-detail {
-      margin-top: 4px;
-      font-size: 0.84rem;
-      color: var(--text-muted);
-      line-height: 1.45;
-    }
-
-    .step-example {
-      margin-top: 10px;
-      border: 1px solid var(--border);
-      background: #f8f9fb;
-      border-radius: 12px;
-      padding: 10px 12px;
-      overflow: hidden;
-    }
-
-    .step-example-label {
-      font-size: 0.68rem;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-      font-weight: 600;
-    }
-
-    .step-example-query {
-      font-size: 0.9rem;
-      font-weight: 500;
-      color: var(--text);
-      line-height: 1.4;
-      margin-bottom: 8px;
-    }
-
-    .step-example pre {
-      margin: 0;
-      overflow-x: auto;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size: 0.75rem;
-      line-height: 1.5;
-      color: #2a3544;
-      white-space: pre;
-    }
-
     .cursor {
       display: inline-block;
       width: 0.55ch;
@@ -712,7 +591,7 @@
           <h1>ERP GPT</h1>
           <span>Demo</span>
         </div>
-        <button class="nav-btn" type="button" id="executionFlowBtn">Execution Flow</button>
+        <a class="nav-btn" href="execution-flow.html">Execution Flow</a>
         <button class="nav-btn primary" type="button" id="newChat">＋ New chat</button>
       </div>
       <div class="sidebar-label">Recent</div>
@@ -750,14 +629,12 @@
   </div>
 
   <script>
-    const app = document.getElementById("app");
     const threadEl = document.getElementById("thread");
     const threadList = document.getElementById("threadList");
     const form = document.getElementById("form");
     const input = document.getElementById("input");
     const send = document.getElementById("send");
     const newChat = document.getElementById("newChat");
-    const executionFlowBtn = document.getElementById("executionFlowBtn");
     const chatTitle = document.getElementById("chatTitle");
     const chatSub = document.getElementById("chatSub");
 
@@ -776,157 +653,6 @@
     let abortController = null;
     let chats = [];
     let activeChatId = null;
-    let viewMode = "chat"; // "chat" | "flow"
-
-    const pipelineSteps = [
-      {
-        label: "Sending user query to ASP.NET API",
-        detail: "POST /api/chat with the natural-language question",
-        example: {
-          label: "Example user query",
-          query: "Show top 5 customers by revenue this quarter"
-        }
-      },
-      {
-        label: "Fetching matching embeddings from RAG vector database",
-        detail: "Embeddings include GraphQL endpoint details to execute. Top matching candidates are returned with similarity scores.",
-        example: {
-          label: "Example embeddings response",
-          query: "Show top 5 customers by revenue this quarter",
-          json: `{
-  "query": "Show top 5 customers by revenue this quarter",
-  "candidates": [
-    {
-      "executionId": "GET_TOP_CUSTOMERS_BY_SALES",
-      "score": 0.94
-    },
-    {
-      "executionId": "GET_TOP_CUSTOMERS_BY_PROFIT",
-      "score": 0.79
-    },
-    {
-      "executionId": "GET_CUSTOMER_SALES_SUMMARY",
-      "score": 0.74
-    }
-  ]
-}`
-        }
-      },
-      {
-        label: "Sending question and top matching embeddings to AI model",
-        detail: "Passing top 3–5 embedding candidates with the user question",
-        example: {
-          label: "Example payload to AI",
-          json: `{
-  "question": "Show top 5 customers by revenue this quarter",
-  "candidates": [
-    "GET_TOP_CUSTOMERS_BY_SALES",
-    "GET_TOP_CUSTOMERS_BY_PROFIT",
-    "GET_CUSTOMER_SALES_SUMMARY"
-  ]
-}`
-        }
-      },
-      {
-        label: "AI evaluates question and selects the best embedding",
-        detail: "Chooses GraphQL endpoint and fills parameters from the question",
-        example: {
-          label: "Example selection",
-          json: `{
-  "selectedExecutionId": "GET_TOP_CUSTOMERS_BY_SALES",
-  "reason": "Highest semantic match for top customers by revenue",
-  "parameters": {
-    "take": 5,
-    "period": "this_quarter",
-    "metric": "revenue"
-  }
-}`
-        }
-      },
-      {
-        label: "AI returns a crafted GraphQL payload",
-        detail: "Query + variables evaluated from the user question",
-        example: {
-          label: "Example GraphQL payload",
-          json: `{
-  "query": "query TopCustomers($take: Int!, $from: LocalDate!, $to: LocalDate!) { topCustomers(take: $take, from: $from, to: $to) { customerId displayName totalSales } }",
-  "variables": {
-    "take": 5,
-    "from": "2026-01-01",
-    "to": "2026-03-31"
-  }
-}`
-        }
-      },
-      {
-        label: "Schema Validation Engine",
-        detail: "Validates the crafted GraphQL payload against the API schema — field names, argument types, required variables, and cost/depth limits — before execution.",
-        example: {
-          label: "Example validation result",
-          json: `{
-  "valid": true,
-  "executionId": "GET_TOP_CUSTOMERS_BY_SALES",
-  "checks": [
-    "operation exists in schema",
-    "variable types match (Int, LocalDate)",
-    "required arguments present",
-    "query cost within limit"
-  ],
-  "errors": []
-}`
-        }
-      },
-      {
-        label: "API executing the GraphQL endpoint",
-        detail: "Running payload against the AdventureWorks GraphQL API",
-        example: {
-          label: "Example request",
-          json: `POST http://localhost:5000/graphql
-Content-Type: application/json
-
-{ "query": "...", "variables": { "take": 5, ... } }`
-        }
-      },
-      {
-        label: "Audit and Log",
-        detail: "Records the question, selected embedding, GraphQL payload, validation outcome, and result for RAG tuning and model training improvement.",
-        example: {
-          label: "Example audit log entry",
-          json: `{
-  "query": "Show top 5 customers by revenue this quarter",
-  "selectedExecutionId": "GET_TOP_CUSTOMERS_BY_SALES",
-  "candidateScores": [0.94, 0.79, 0.74],
-  "validation": "passed",
-  "latencyMs": 842,
-  "feedback": null,
-  "usedFor": ["rag_retraining", "model_eval"]
-}`
-        }
-      },
-      {
-        label: "Sending response back to UI",
-        detail: "API returns structured result data to the client",
-        example: {
-          label: "Example API response",
-          json: `{
-  "data": {
-    "topCustomers": [
-      { "displayName": "Adventure Works Cycle", "totalSales": 248420 },
-      { "displayName": "Metropolitan Bike Supply", "totalSales": 191055 }
-    ]
-  }
-}`
-        }
-      },
-      {
-        label: "UI formatting and rendering results",
-        detail: "Preparing tables and summary text for the answer pane",
-        example: {
-          label: "Example rendered result",
-          query: "Top 5 customers table with territory and revenue columns"
-        }
-      }
-    ];
 
     const replies = [
       {
@@ -990,75 +716,6 @@ Content-Type: application/json
       return new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     }
 
-    function setNavState() {
-      executionFlowBtn.classList.toggle("active", viewMode === "flow");
-      const chat = activeChat();
-      [...threadList.querySelectorAll(".thread-item")].forEach((btn) => {
-        btn.classList.toggle("active", viewMode === "chat" && btn.dataset.id === activeChatId);
-      });
-      if (!chat || !chat.messages.length) {
-        // keep list as-is
-      }
-    }
-
-    function renderStepExample(example) {
-      if (!example) return "";
-      const queryHtml = example.query
-        ? `<div class="step-example-query">${escapeHtml(example.query)}</div>`
-        : "";
-      const jsonHtml = example.json
-        ? `<pre>${escapeHtml(example.json)}</pre>`
-        : "";
-      return `
-        <div class="step-example">
-          <div class="step-example-label">${escapeHtml(example.label || "Example")}</div>
-          ${queryHtml}
-          ${jsonHtml}
-        </div>`;
-    }
-
-    function showExecutionFlow() {
-      if (busy && abortController) abortController.abort();
-      busy = false;
-      persistCurrentView();
-      viewMode = "flow";
-      app.classList.add("flow-mode");
-      chatTitle.textContent = "Execution Flow";
-      chatSub.textContent = "How a query is processed end to end";
-      threadEl.innerHTML = `
-        <div class="flow-view">
-          <p class="flow-intro">These are the steps ERP GPT runs behind the scenes for every chat question — from the ASP.NET API through RAG embeddings, AI payload crafting, GraphQL execution, and UI rendering.</p>
-          <div class="flow-card">
-            <ol class="steps">
-              ${pipelineSteps
-                .map(
-                  (step, i) => `
-                <li class="step">
-                  <div class="step-mark">${i + 1}</div>
-                  <div class="step-body">
-                    <div class="step-label">${step.label}</div>
-                    <div class="step-detail">${step.detail}</div>
-                    ${renderStepExample(step.example)}
-                  </div>
-                </li>`
-                )
-                .join("")}
-            </ol>
-          </div>
-        </div>`;
-      setNavState();
-      renderThreadList();
-    }
-
-    function showChatView() {
-      viewMode = "chat";
-      app.classList.remove("flow-mode");
-      chatSub.textContent = "Ask your ERP anything";
-      renderActiveChat();
-      setNavState();
-      renderThreadList();
-    }
-
     function createChat() {
       const chat = {
         id: uid(),
@@ -1068,14 +725,15 @@ Content-Type: application/json
       };
       chats.unshift(chat);
       activeChatId = chat.id;
-      showChatView();
+      chatSub.textContent = "Ask your ERP anything";
+      renderThreadList();
+      renderActiveChat();
       return chat;
     }
 
     function ensureActiveChat() {
       let chat = activeChat();
       if (!chat) chat = createChat();
-      if (viewMode !== "chat") showChatView();
       return chat;
     }
 
@@ -1089,7 +747,7 @@ Content-Type: application/json
       threadList.innerHTML = withMessages
         .map(
           (c) => `
-          <button type="button" class="thread-item ${viewMode === "chat" && c.id === activeChatId ? "active" : ""}" data-id="${c.id}">
+          <button type="button" class="thread-item ${c.id === activeChatId ? "active" : ""}" data-id="${c.id}">
             <div class="thread-item-title">${escapeHtml(c.title)}</div>
             <div class="thread-item-meta">${formatTime(c.updatedAt)} · ${c.messages.length} messages</div>
           </button>`
@@ -1136,7 +794,6 @@ Content-Type: application/json
     }
 
     function persistCurrentView() {
-      if (viewMode !== "chat") return;
       const chat = activeChat();
       if (!chat) return;
       const articles = [...threadEl.querySelectorAll(".msg")];
@@ -1151,7 +808,7 @@ Content-Type: application/json
     function autoGrow() {
       input.style.height = "auto";
       input.style.height = Math.min(input.scrollHeight, 160) + "px";
-      send.disabled = busy || viewMode !== "chat" || !input.value.trim();
+      send.disabled = busy || !input.value.trim();
     }
 
     function scrollToBottom() {
@@ -1303,8 +960,6 @@ Content-Type: application/json
       const q = question.trim();
       if (busy || !q) return;
 
-      if (viewMode !== "chat") showChatView();
-
       busy = true;
       send.disabled = true;
       abortController = new AbortController();
@@ -1348,12 +1003,14 @@ Content-Type: application/json
     }
 
     function switchChat(id) {
-      if (viewMode === "chat" && id === activeChatId) return;
+      if (id === activeChatId) return;
       if (busy && abortController) abortController.abort();
       busy = false;
       persistCurrentView();
       activeChatId = id;
-      showChatView();
+      chatSub.textContent = "Ask your ERP anything";
+      renderThreadList();
+      renderActiveChat();
       input.value = "";
       autoGrow();
       input.focus();
@@ -1380,10 +1037,6 @@ Content-Type: application/json
       const btn = e.target.closest(".thread-item");
       if (!btn) return;
       switchChat(btn.dataset.id);
-    });
-
-    executionFlowBtn.addEventListener("click", () => {
-      showExecutionFlow();
     });
 
     newChat.addEventListener("click", () => {
