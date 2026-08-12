@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ERP GPT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-0: #e8eaed;
+      --surface: rgba(255, 255, 255, 0.9);
+      --border: rgba(60, 72, 88, 0.14);
+      --text: #1a2330;
+      --text-muted: #6b7788;
+      --accent: #2f8a7e;
+      --accent-soft: rgba(47, 138, 126, 0.12);
+      --user-bg: rgba(47, 138, 126, 0.1);
+      --shadow: 0 14px 36px rgba(40, 50, 65, 0.1);
+      --radius: 18px;
+      --font: "DM Sans", "Segoe UI", "Calibri", sans-serif;
+      --display: "Source Sans 3", "Calibri", "Segoe UI", sans-serif;
+      --sidebar-width: 260px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--bg-0);
+      overflow: hidden;
+    }
+
+    .shell {
+      height: 100%;
+      max-height: 100vh;
+      display: grid;
+      grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      height: 100%;
+      max-height: 100vh;
+      border-right: 1px solid var(--border);
+      background: #f3f4f6;
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .sidebar-top {
+      padding: 16px 14px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      padding: 0 4px 6px;
+    }
+
+    .sidebar-brand h1 {
+      font-family: var(--display);
+      font-size: 1.45rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .sidebar-brand span {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .nav-btn {
+      appearance: none;
+      width: 100%;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text);
+      font: inherit;
+      font-size: 0.88rem;
+      font-weight: 500;
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.2s, background 0.2s, color 0.2s;
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .nav-btn.active {
+      background: #fff;
+      border-color: var(--border);
+      box-shadow: 0 1px 2px rgba(40, 50, 65, 0.06);
+    }
+
+    .nav-btn.primary {
+      border-color: var(--border);
+      background: #fff;
+    }
+
+    .nav-btn.primary:hover {
+      border-color: rgba(47, 138, 126, 0.4);
+      background: var(--accent-soft);
+    }
+
+    .sidebar-label {
+      padding: 10px 18px 8px;
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .thread-list {
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 0 10px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+
+    .thread-list::-webkit-scrollbar,
+    .thread::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .thread-list::-webkit-scrollbar-thumb,
+    .thread::-webkit-scrollbar-thumb {
+      background: rgba(60, 72, 88, 0.22);
+      border-radius: 8px;
+    }
+
+    .thread-item {
+      appearance: none;
+      width: 100%;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      font: inherit;
+      text-align: left;
+      padding: 10px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .thread-item:hover {
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .thread-item.active {
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(40, 50, 65, 0.06);
+    }
+
+    .thread-item-title {
+      font-size: 0.88rem;
+      font-weight: 500;
+      line-height: 1.35;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .thread-item-meta {
+      margin-top: 3px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .thread-empty {
+      padding: 18px 12px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.84rem;
+      line-height: 1.45;
+    }
+
+    .app {
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      max-width: 820px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 16px;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .app.flow-mode {
+      grid-template-rows: auto 1fr;
+    }
+
+    .app.flow-mode .composer-wrap {
+      display: none;
+    }
+
+    header {
+      padding: 20px 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      animation: fadeDown 0.5s ease both;
+    }
+
+    .chat-title {
+      font-family: var(--display);
+      font-size: 1.05rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-title-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .thread {
+      overflow-y: auto;
+      padding: 8px 4px 24px;
+      scroll-behavior: smooth;
+      min-height: 0;
+      mask-image: linear-gradient(to bottom, transparent, #000 12px, #000 calc(100% - 8px), transparent);
+    }
+
+    .empty {
+      height: 100%;
+      min-height: 280px;
+      display: grid;
+      place-content: center;
+      text-align: center;
+      gap: 10px;
+      padding: 40px 20px;
+      animation: fadeUp 0.55s ease both;
+    }
+
+    .empty h2 {
+      font-family: var(--display);
+      font-size: clamp(1.85rem, 4.2vw, 2.4rem);
+      font-weight: 600;
+      letter-spacing: -0.015em;
+      line-height: 1.2;
+    }
+
+    .empty p {
+      color: var(--text-muted);
+      max-width: 36ch;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 18px;
+    }
+
+    .suggestions button {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      font-size: 0.85rem;
+      padding: 10px 14px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.2s, background 0.2s;
+    }
+
+    .suggestions button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(61, 155, 143, 0.45);
+      background: var(--accent-soft);
+    }
+
+    .msg {
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 14px;
+      padding: 18px 10px;
+      animation: fadeUp 0.35s ease both;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      flex-shrink: 0;
+    }
+
+    .msg.user .avatar {
+      background: var(--accent-soft);
+      color: #1f6f65;
+      border: 1px solid rgba(47, 138, 126, 0.28);
+    }
+
+    .msg.assistant .avatar {
+      background: #f3f4f6;
+      color: #4a5565;
+      border: 1px solid var(--border);
+    }
+
+    .bubble {
+      min-width: 0;
+      padding-top: 6px;
+    }
+
+    .role {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+
+    .content {
+      min-width: 0;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-size: 0.98rem;
+    }
+
+    .msg.user .content {
+      background: var(--user-bg);
+      border: 1px solid rgba(47, 138, 126, 0.16);
+      border-radius: 16px;
+      padding: 12px 14px;
+    }
+
+    .content :is(h3, h4) {
+      margin: 0.9em 0 0.35em;
+      font-weight: 600;
+    }
+
+    .content ul {
+      margin: 0.5em 0 0.5em 1.2em;
+    }
+
+    .content code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.88em;
+      background: rgba(0, 0, 0, 0.05);
+      padding: 0.12em 0.35em;
+      border-radius: 6px;
+    }
+
+    .content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.75em 0;
+      font-size: 0.9rem;
+    }
+
+    .content th,
+    .content td {
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      text-align: left;
+    }
+
+    .content th {
+      background: rgba(0, 0, 0, 0.03);
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .loading {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      white-space: normal;
+    }
+
+    .dots {
+      display: inline-flex;
+      gap: 4px;
+    }
+
+    .dots i {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.35;
+      animation: pulse 1.1s infinite ease-in-out;
+    }
+
+    .dots i:nth-child(2) { animation-delay: 0.15s; }
+    .dots i:nth-child(3) { animation-delay: 0.3s; }
+
+    .flow-view {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 8px 8px 28px;
+      animation: fadeUp 0.35s ease both;
+    }
+
+    .flow-intro {
+      margin-bottom: 18px;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .flow-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 8px 18px;
+    }
+
+    .steps {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 14px 0;
+      position: relative;
+    }
+
+    .step:not(:last-child)::before {
+      content: "";
+      position: absolute;
+      left: 13px;
+      top: 40px;
+      bottom: -2px;
+      width: 1px;
+      background: rgba(60, 72, 88, 0.16);
+    }
+
+    .step-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(47, 138, 126, 0.35);
+      background: var(--accent-soft);
+      display: grid;
+      place-items: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #1f6f65;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-body {
+      min-width: 0;
+      padding-top: 3px;
+    }
+
+    .step-label {
+      font-size: 0.95rem;
+      line-height: 1.4;
+      font-weight: 600;
+    }
+
+    .step-detail {
+      margin-top: 4px;
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .step-example {
+      margin-top: 10px;
+      border: 1px solid var(--border);
+      background: #f8f9fb;
+      border-radius: 12px;
+      padding: 10px 12px;
+      overflow: hidden;
+    }
+
+    .step-example-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .step-example-query {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+
+    .step-example pre {
+      margin: 0;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.75rem;
+      line-height: 1.5;
+      color: #2a3544;
+      white-space: pre;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 0.55ch;
+      height: 1.05em;
+      margin-left: 1px;
+      vertical-align: -0.15em;
+      background: var(--accent);
+      animation: blink 0.9s step-end infinite;
+    }
+
+    .stream-in {
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .content p {
+      margin: 0;
+    }
+
+    .content p + p,
+    .content p + table,
+    .content table + p,
+    .content p + ul,
+    .content ul + p {
+      margin-top: 0.75em;
+    }
+
+    .composer-wrap {
+      padding: 0 0 22px;
+      animation: fadeUp 0.5s ease 0.1s both;
+    }
+
+    .composer {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: end;
+      padding: 12px;
+      border-radius: var(--radius);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      box-shadow: var(--shadow);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .composer:focus-within {
+      border-color: rgba(47, 138, 126, 0.45);
+      box-shadow: var(--shadow), 0 0 0 3px rgba(47, 138, 126, 0.12);
+    }
+
+    textarea {
+      width: 100%;
+      resize: none;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--text);
+      font: inherit;
+      font-size: 1rem;
+      line-height: 1.45;
+      max-height: 160px;
+      padding: 8px 6px;
+      field-sizing: content;
+    }
+
+    textarea::placeholder {
+      color: var(--text-muted);
+    }
+
+    .send {
+      appearance: none;
+      width: 42px;
+      height: 42px;
+      border: none;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: transform 0.15s, opacity 0.2s, background 0.2s;
+    }
+
+    .send:hover:not(:disabled) {
+      transform: translateY(-1px);
+      background: #26786d;
+    }
+
+    .send:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .send svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .hint {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      margin-top: 10px;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 80%, 100% { opacity: 0.25; transform: scale(0.85); }
+      40% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+      }
+
+      .sidebar {
+        max-height: none;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        grid-template-rows: auto auto auto;
+      }
+
+      .thread-list {
+        max-height: 140px;
+        flex-direction: row;
+        overflow-x: auto;
+        overflow-y: hidden;
+        gap: 8px;
+        padding-bottom: 12px;
+      }
+
+      .thread-item {
+        min-width: 180px;
+        background: rgba(255, 255, 255, 0.7);
+      }
+    }
+
+    @media (max-width: 560px) {
+      .app { padding: 0 10px; }
+      .msg { grid-template-columns: 28px 1fr; gap: 10px; }
+      .avatar { width: 28px; height: 28px; border-radius: 9px; font-size: 0.62rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar" aria-label="Navigation">
+      <div class="sidebar-top">
+        <div class="sidebar-brand">
+          <h1>ERP GPT</h1>
+          <span>Demo</span>
+        </div>
+        <button class="nav-btn" type="button" id="executionFlowBtn">Execution Flow</button>
+        <button class="nav-btn primary" type="button" id="newChat">＋ New chat</button>
+      </div>
+      <div class="sidebar-label">Recent</div>
+      <div class="thread-list" id="threadList"></div>
+    </aside>
+
+    <div class="app" id="app">
+      <header>
+        <div>
+          <div class="chat-title" id="chatTitle">New chat</div>
+          <div class="chat-title-sub" id="chatSub">Ask your ERP anything</div>
+        </div>
+      </header>
+
+      <main class="thread" id="thread" aria-live="polite"></main>
+
+      <div class="composer-wrap" id="composerWrap">
+        <form class="composer" id="form">
+          <textarea
+            id="input"
+            rows="1"
+            placeholder="Ask about sales, customers, products…"
+            autocomplete="off"
+            enterkeyhint="send"
+          ></textarea>
+          <button class="send" type="submit" id="send" aria-label="Send" disabled>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </form>
+        <p class="hint">Demo UI — responses are simulated.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const app = document.getElementById("app");
+    const threadEl = document.getElementById("thread");
+    const threadList = document.getElementById("threadList");
+    const form = document.getElementById("form");
+    const input = document.getElementById("input");
+    const send = document.getElementById("send");
+    const newChat = document.getElementById("newChat");
+    const executionFlowBtn = document.getElementById("executionFlowBtn");
+    const chatTitle = document.getElementById("chatTitle");
+    const chatSub = document.getElementById("chatSub");
+
+    const emptyHtml = `
+      <div class="empty" id="empty">
+        <h2>Ask your ERP anything</h2>
+        <p>Sales, customers, inventory, territories — pick a recent chat on the left, or start a new one.</p>
+        <div class="suggestions">
+          <button type="button" data-prompt="Show top 5 customers by revenue this quarter">Top customers</button>
+          <button type="button" data-prompt="What were total sales in Canada last month?">Canada sales</button>
+          <button type="button" data-prompt="List products with low stock in the Bikes category">Low stock bikes</button>
+        </div>
+      </div>`;
+
+    let busy = false;
+    let abortController = null;
+    let chats = [];
+    let activeChatId = null;
+    let viewMode = "chat"; // "chat" | "flow"
+
+    const pipelineSteps = [
+      {
+        label: "Sending user query to ASP.NET API",
+        detail: "POST /api/chat with the natural-language question",
+        example: {
+          label: "Example user query",
+          query: "Show top 5 customers by revenue this quarter"
+        }
+      },
+      {
+        label: "Fetching matching embeddings from RAG vector database",
+        detail: "Embeddings include GraphQL endpoint details to execute. Top matching candidates are returned with similarity scores.",
+        example: {
+          label: "Example embeddings response",
+          query: "Show top 5 customers by revenue this quarter",
+          json: `{
+  "query": "Show top 5 customers by revenue this quarter",
+  "candidates": [
+    {
+      "executionId": "GET_TOP_CUSTOMERS_BY_SALES",
+      "score": 0.94
+    },
+    {
+      "executionId": "GET_TOP_CUSTOMERS_BY_PROFIT",
+      "score": 0.79
+    },
+    {
+      "executionId": "GET_CUSTOMER_SALES_SUMMARY",
+      "score": 0.74
+    }
+  ]
+}`
+        }
+      },
+      {
+        label: "Sending question and top matching embeddings to AI model",
+        detail: "Passing top 3–5 embedding candidates with the user question",
+        example: {
+          label: "Example payload to AI",
+          json: `{
+  "question": "Show top 5 customers by revenue this quarter",
+  "candidates": [
+    "GET_TOP_CUSTOMERS_BY_SALES",
+    "GET_TOP_CUSTOMERS_BY_PROFIT",
+    "GET_CUSTOMER_SALES_SUMMARY"
+  ]
+}`
+        }
+      },
+      {
+        label: "AI evaluates question and selects the best embedding",
+        detail: "Chooses GraphQL endpoint and fills parameters from the question",
+        example: {
+          label: "Example selection",
+          json: `{
+  "selectedExecutionId": "GET_TOP_CUSTOMERS_BY_SALES",
+  "reason": "Highest semantic match for top customers by revenue",
+  "parameters": {
+    "take": 5,
+    "period": "this_quarter",
+    "metric": "revenue"
+  }
+}`
+        }
+      },
+      {
+        label: "AI returns a crafted GraphQL payload",
+        detail: "Query + variables evaluated from the user question",
+        example: {
+          label: "Example GraphQL payload",
+          json: `{
+  "query": "query TopCustomers($take: Int!, $from: LocalDate!, $to: LocalDate!) { topCustomers(take: $take, from: $from, to: $to) { customerId displayName totalSales } }",
+  "variables": {
+    "take": 5,
+    "from": "2026-01-01",
+    "to": "2026-03-31"
+  }
+}`
+        }
+      },
+      {
+        label: "Schema Validation Engine",
+        detail: "Validates the crafted GraphQL payload against the API schema — field names, argument types, required variables, and cost/depth limits — before execution.",
+        example: {
+          label: "Example validation result",
+          json: `{
+  "valid": true,
+  "executionId": "GET_TOP_CUSTOMERS_BY_SALES",
+  "checks": [
+    "operation exists in schema",
+    "variable types match (Int, LocalDate)",
+    "required arguments present",
+    "query cost within limit"
+  ],
+  "errors": []
+}`
+        }
+      },
+      {
+        label: "API executing the GraphQL endpoint",
+        detail: "Running payload against the AdventureWorks GraphQL API",
+        example: {
+          label: "Example request",
+          json: `POST http://localhost:5000/graphql
+Content-Type: application/json
+
+{ "query": "...", "variables": { "take": 5, ... } }`
+        }
+      },
+      {
+        label: "Audit and Log",
+        detail: "Records the question, selected embedding, GraphQL payload, validation outcome, and result for RAG tuning and model training improvement.",
+        example: {
+          label: "Example audit log entry",
+          json: `{
+  "query": "Show top 5 customers by revenue this quarter",
+  "selectedExecutionId": "GET_TOP_CUSTOMERS_BY_SALES",
+  "candidateScores": [0.94, 0.79, 0.74],
+  "validation": "passed",
+  "latencyMs": 842,
+  "feedback": null,
+  "usedFor": ["rag_retraining", "model_eval"]
+}`
+        }
+      },
+      {
+        label: "Sending response back to UI",
+        detail: "API returns structured result data to the client",
+        example: {
+          label: "Example API response",
+          json: `{
+  "data": {
+    "topCustomers": [
+      { "displayName": "Adventure Works Cycle", "totalSales": 248420 },
+      { "displayName": "Metropolitan Bike Supply", "totalSales": 191055 }
+    ]
+  }
+}`
+        }
+      },
+      {
+        label: "UI formatting and rendering results",
+        detail: "Preparing tables and summary text for the answer pane",
+        example: {
+          label: "Example rendered result",
+          query: "Top 5 customers table with territory and revenue columns"
+        }
+      }
+    ];
+
+    const replies = [
+      {
+        match: /top|customer|revenue/i,
+        html: `<p>Here are the <strong>top 5 customers by revenue</strong> for the current quarter:</p>
+<table>
+  <thead><tr><th>Customer</th><th>Territory</th><th>Revenue</th></tr></thead>
+  <tbody>
+    <tr><td>Adventure Works Cycle</td><td>Southwest</td><td>$248,420</td></tr>
+    <tr><td>Metropolitan Bike Supply</td><td>Canada</td><td>$191,055</td></tr>
+    <tr><td>Northwest Traders</td><td>Northwest</td><td>$167,880</td></tr>
+    <tr><td>Contoso Retail</td><td>Central</td><td>$142,310</td></tr>
+    <tr><td>Fabrikam Bikes</td><td>Southeast</td><td>$128,640</td></tr>
+  </tbody>
+</table>
+<p>Southwest accounts for the largest share (~28%). Want a breakdown by product category?</p>`
+      },
+      {
+        match: /canada|territory|sales/i,
+        html: `<p>Total sales in <strong>Canada</strong> for last month came to <code>$412,780</code>.</p>
+<ul>
+  <li>Orders: 186</li>
+  <li>Avg order value: $2,219</li>
+  <li>Top category: Mountain Bikes (34%)</li>
+</ul>
+<p>Revenue was up <strong>6.2%</strong> vs the prior month.</p>`
+      },
+      {
+        match: /stock|product|bike|inventory/i,
+        html: `<p>Products in <strong>Bikes</strong> with low stock (≤ 25 units):</p>
+<table>
+  <thead><tr><th>SKU</th><th>Product</th><th>On hand</th></tr></thead>
+  <tbody>
+    <tr><td>BK-M82B-42</td><td>Mountain-200 Black, 42</td><td>8</td></tr>
+    <tr><td>BK-R93R-44</td><td>Road-250 Red, 44</td><td>14</td></tr>
+    <tr><td>BK-T79Y-46</td><td>Touring-1000 Yellow, 46</td><td>21</td></tr>
+  </tbody>
+</table>
+<p>I can draft a reorder suggestion if you want.</p>`
+      }
+    ];
+
+    const fallback = `<p>I looked across sales, customers, and inventory for that question.</p>
+<p>In this demo, answers are simulated — once connected to the GraphQL API, this pane will stream live ERP data the same way.</p>
+<p>Try a prompt like <em>top customers</em>, <em>Canada sales</em>, or <em>low stock bikes</em>.</p>`;
+
+    function uid() {
+      return `c_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    }
+
+    function activeChat() {
+      return chats.find((c) => c.id === activeChatId) || null;
+    }
+
+    function titleFromQuestion(q) {
+      const cleaned = q.trim().replace(/\s+/g, " ");
+      return cleaned.length > 42 ? cleaned.slice(0, 42) + "…" : cleaned;
+    }
+
+    function formatTime(ts) {
+      return new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function setNavState() {
+      executionFlowBtn.classList.toggle("active", viewMode === "flow");
+      const chat = activeChat();
+      [...threadList.querySelectorAll(".thread-item")].forEach((btn) => {
+        btn.classList.toggle("active", viewMode === "chat" && btn.dataset.id === activeChatId);
+      });
+      if (!chat || !chat.messages.length) {
+        // keep list as-is
+      }
+    }
+
+    function renderStepExample(example) {
+      if (!example) return "";
+      const queryHtml = example.query
+        ? `<div class="step-example-query">${escapeHtml(example.query)}</div>`
+        : "";
+      const jsonHtml = example.json
+        ? `<pre>${escapeHtml(example.json)}</pre>`
+        : "";
+      return `
+        <div class="step-example">
+          <div class="step-example-label">${escapeHtml(example.label || "Example")}</div>
+          ${queryHtml}
+          ${jsonHtml}
+        </div>`;
+    }
+
+    function showExecutionFlow() {
+      if (busy && abortController) abortController.abort();
+      busy = false;
+      persistCurrentView();
+      viewMode = "flow";
+      app.classList.add("flow-mode");
+      chatTitle.textContent = "Execution Flow";
+      chatSub.textContent = "How a query is processed end to end";
+      threadEl.innerHTML = `
+        <div class="flow-view">
+          <p class="flow-intro">These are the steps ERP GPT runs behind the scenes for every chat question — from the ASP.NET API through RAG embeddings, AI payload crafting, GraphQL execution, and UI rendering.</p>
+          <div class="flow-card">
+            <ol class="steps">
+              ${pipelineSteps
+                .map(
+                  (step, i) => `
+                <li class="step">
+                  <div class="step-mark">${i + 1}</div>
+                  <div class="step-body">
+                    <div class="step-label">${step.label}</div>
+                    <div class="step-detail">${step.detail}</div>
+                    ${renderStepExample(step.example)}
+                  </div>
+                </li>`
+                )
+                .join("")}
+            </ol>
+          </div>
+        </div>`;
+      setNavState();
+      renderThreadList();
+    }
+
+    function showChatView() {
+      viewMode = "chat";
+      app.classList.remove("flow-mode");
+      chatSub.textContent = "Ask your ERP anything";
+      renderActiveChat();
+      setNavState();
+      renderThreadList();
+    }
+
+    function createChat() {
+      const chat = {
+        id: uid(),
+        title: "New chat",
+        updatedAt: Date.now(),
+        messages: []
+      };
+      chats.unshift(chat);
+      activeChatId = chat.id;
+      showChatView();
+      return chat;
+    }
+
+    function ensureActiveChat() {
+      let chat = activeChat();
+      if (!chat) chat = createChat();
+      if (viewMode !== "chat") showChatView();
+      return chat;
+    }
+
+    function renderThreadList() {
+      const withMessages = chats.filter((c) => c.messages.length > 0);
+      if (!withMessages.length) {
+        threadList.innerHTML = `<div class="thread-empty">No recent chats yet.<br />Start one to see it here.</div>`;
+        return;
+      }
+
+      threadList.innerHTML = withMessages
+        .map(
+          (c) => `
+          <button type="button" class="thread-item ${viewMode === "chat" && c.id === activeChatId ? "active" : ""}" data-id="${c.id}">
+            <div class="thread-item-title">${escapeHtml(c.title)}</div>
+            <div class="thread-item-meta">${formatTime(c.updatedAt)} · ${c.messages.length} messages</div>
+          </button>`
+        )
+        .join("");
+    }
+
+    function renderActiveChat() {
+      const chat = activeChat();
+      if (!chat) {
+        chatTitle.textContent = "New chat";
+        threadEl.innerHTML = emptyHtml;
+        bindSuggestions();
+        return;
+      }
+
+      chatTitle.textContent = chat.title;
+
+      if (!chat.messages.length) {
+        threadEl.innerHTML = emptyHtml;
+        bindSuggestions();
+        return;
+      }
+
+      threadEl.innerHTML = chat.messages
+        .map(
+          (m) => `
+          <article class="msg ${m.role}">
+            <div class="avatar">${m.role === "user" ? "You" : "AI"}</div>
+            <div class="bubble">
+              <div class="role">${m.role === "user" ? "You" : "ERP GPT"}</div>
+              <div class="content">${m.html}</div>
+            </div>
+          </article>`
+        )
+        .join("");
+      scrollToBottom();
+    }
+
+    function bindSuggestions() {
+      threadEl.querySelectorAll("[data-prompt]").forEach((btn) => {
+        btn.addEventListener("click", () => ask(btn.dataset.prompt));
+      });
+    }
+
+    function persistCurrentView() {
+      if (viewMode !== "chat") return;
+      const chat = activeChat();
+      if (!chat) return;
+      const articles = [...threadEl.querySelectorAll(".msg")];
+      if (!articles.length) return;
+      chat.messages = articles.map((article) => ({
+        role: article.classList.contains("user") ? "user" : "assistant",
+        html: article.querySelector(".content").innerHTML
+      }));
+      chat.updatedAt = Date.now();
+    }
+
+    function autoGrow() {
+      input.style.height = "auto";
+      input.style.height = Math.min(input.scrollHeight, 160) + "px";
+      send.disabled = busy || viewMode !== "chat" || !input.value.trim();
+    }
+
+    function scrollToBottom() {
+      requestAnimationFrame(() => {
+        threadEl.scrollTop = threadEl.scrollHeight;
+      });
+    }
+
+    function addMessage(role, initialHtml = "") {
+      const empty = threadEl.querySelector("#empty");
+      if (empty) empty.remove();
+
+      const el = document.createElement("article");
+      el.className = `msg ${role}`;
+      el.innerHTML = `
+        <div class="avatar">${role === "user" ? "You" : "AI"}</div>
+        <div class="bubble">
+          <div class="role">${role === "user" ? "You" : "ERP GPT"}</div>
+          <div class="content">${initialHtml}</div>
+        </div>`;
+      threadEl.appendChild(el);
+      scrollToBottom();
+      return el.querySelector(".content");
+    }
+
+    function pickReply(question) {
+      const found = replies.find((r) => r.match.test(question));
+      return found ? found.html : fallback;
+    }
+
+    function sleep(ms, signal) {
+      return new Promise((resolve, reject) => {
+        if (signal?.aborted) {
+          reject(new DOMException("Aborted", "AbortError"));
+          return;
+        }
+        const t = setTimeout(resolve, ms);
+        if (signal) {
+          signal.addEventListener(
+            "abort",
+            () => {
+              clearTimeout(t);
+              reject(new DOMException("Aborted", "AbortError"));
+            },
+            { once: true }
+          );
+        }
+      });
+    }
+
+    function placeCursor(container) {
+      let cursor = container.querySelector(":scope > .cursor");
+      if (!cursor) {
+        cursor = document.createElement("span");
+        cursor.className = "cursor";
+        cursor.setAttribute("aria-hidden", "true");
+      }
+      container.appendChild(cursor);
+      return cursor;
+    }
+
+    function clearCursor(container) {
+      container.querySelectorAll(".cursor").forEach((el) => el.remove());
+    }
+
+    async function streamText(target, text, signal) {
+      let i = 0;
+      while (i < text.length) {
+        if (signal.aborted) throw new DOMException("Aborted", "AbortError");
+
+        let size = 1;
+        const ch = text[i];
+        if (/\s/.test(ch)) {
+          size = 1;
+        } else {
+          const nextBreak = text.slice(i).search(/[\s.,;:!?]/);
+          const wordLen = nextBreak === -1 ? text.length - i : nextBreak;
+          size = wordLen > 0 && wordLen <= 10 ? wordLen : Math.min(2 + Math.floor(Math.random() * 2), Math.max(1, wordLen));
+        }
+
+        target.insertBefore(
+          document.createTextNode(text.slice(i, i + size)),
+          target.querySelector(":scope > .cursor")
+        );
+        i += size;
+        scrollToBottom();
+
+        const delay = /\s/.test(ch) ? 10 : 14 + Math.random() * 12;
+        await sleep(delay, signal);
+      }
+    }
+
+    async function streamInline(parent, source, signal) {
+      for (const node of source.childNodes) {
+        if (signal.aborted) throw new DOMException("Aborted", "AbortError");
+
+        if (node.nodeType === Node.TEXT_NODE) {
+          await streamText(parent, node.textContent || "", signal);
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          const inline = document.createElement(node.tagName.toLowerCase());
+          for (const attr of node.attributes) inline.setAttribute(attr.name, attr.value);
+          parent.insertBefore(inline, parent.querySelector(":scope > .cursor"));
+          placeCursor(parent);
+          if (node.childNodes.length && !/^(BR|HR|IMG)$/i.test(node.tagName)) {
+            await streamInline(inline, node, signal);
+          }
+        }
+      }
+    }
+
+    async function streamHtml(target, html, signal) {
+      target.innerHTML = "";
+      placeCursor(target);
+
+      const staging = document.createElement("div");
+      staging.innerHTML = html.trim();
+      const blocks = [...staging.children];
+
+      for (let b = 0; b < blocks.length; b++) {
+        if (signal.aborted) throw new DOMException("Aborted", "AbortError");
+        const source = blocks[b];
+        clearCursor(target);
+
+        // Tables / lists appear as complete blocks (ChatGPT-style), with a soft fade-in
+        if (/^(TABLE|UL|OL)$/i.test(source.tagName)) {
+          const block = source.cloneNode(true);
+          block.classList.add("stream-in");
+          target.appendChild(block);
+          placeCursor(target);
+          scrollToBottom();
+          await sleep(180, signal);
+          continue;
+        }
+
+        // Paragraphs and other text blocks type out smoothly
+        const el = document.createElement(source.tagName.toLowerCase());
+        target.appendChild(el);
+        placeCursor(el);
+        await streamInline(el, source, signal);
+        clearCursor(el);
+        placeCursor(target);
+        if (b < blocks.length - 1) await sleep(90, signal);
+      }
+
+      clearCursor(target);
+    }
+
+    async function ask(question) {
+      const q = question.trim();
+      if (busy || !q) return;
+
+      if (viewMode !== "chat") showChatView();
+
+      busy = true;
+      send.disabled = true;
+      abortController = new AbortController();
+      const { signal } = abortController;
+
+      const chat = ensureActiveChat();
+      if (chat.messages.length === 0) {
+        chat.title = titleFromQuestion(q);
+        chatTitle.textContent = chat.title;
+      }
+
+      addMessage("user", escapeHtml(q));
+      const assistant = addMessage(
+        "assistant",
+        `<span class="loading"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span> Thinking…</span>`
+      );
+
+      try {
+        await sleep(450 + Math.random() * 350, signal);
+        await streamHtml(assistant, pickReply(q), signal);
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          assistant.textContent = "Something went wrong. Please try again.";
+        }
+      } finally {
+        persistCurrentView();
+        renderThreadList();
+        busy = false;
+        abortController = null;
+        autoGrow();
+        input.focus();
+      }
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function switchChat(id) {
+      if (viewMode === "chat" && id === activeChatId) return;
+      if (busy && abortController) abortController.abort();
+      busy = false;
+      persistCurrentView();
+      activeChatId = id;
+      showChatView();
+      input.value = "";
+      autoGrow();
+      input.focus();
+    }
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const q = input.value;
+      input.value = "";
+      autoGrow();
+      ask(q);
+    });
+
+    input.addEventListener("input", autoGrow);
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        form.requestSubmit();
+      }
+    });
+
+    threadList.addEventListener("click", (e) => {
+      const btn = e.target.closest(".thread-item");
+      if (!btn) return;
+      switchChat(btn.dataset.id);
+    });
+
+    executionFlowBtn.addEventListener("click", () => {
+      showExecutionFlow();
+    });
+
+    newChat.addEventListener("click", () => {
+      if (busy && abortController) abortController.abort();
+      busy = false;
+      persistCurrentView();
+      createChat();
+      input.value = "";
+      autoGrow();
+      input.focus();
+    });
+
+    createChat();
+    autoGrow();
+    input.focus();
+  </script>
+</body>
+</html>
