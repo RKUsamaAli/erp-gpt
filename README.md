@@ -69,6 +69,16 @@ Full architecture notes: [`docs/architecture.md`](docs/architecture.md)
 
 ---
 
+## Demo UI
+
+Interactive ChatGPT-style demo of the ERP GPT chat and execution flow:
+
+- Folder: [`demo/`](demo/)
+- Live page (GitHub Pages): https://hammadrehmanawan.github.io/erp-gpt/
+- Instant preview: [open HTML preview](https://htmlpreview.github.io/?https://github.com/HammadRehmanAwan/erp-gpt/blob/feature/demo_html/demo/index.html)
+
+---
+
 ## Repo layout & ownership
 
 | Folder | What lives here | Owner |
