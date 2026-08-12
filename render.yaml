@@ -1,0 +1,71 @@
+# Render Blueprint — provisions the whole shared test environment at once.
+#
+#   Render dashboard > New > Blueprint > pick this repo > Apply
+#
+# That single action creates three things: the GraphQL API, a browser-based
+# database UI, and the Postgres instance both of them talk to over Render's
+# private network. See DEPLOY.md for the dataset load, which is the one step
+# that cannot be expressed here.
+
+services:
+  # ── The API under test ────────────────────────────────────────────────────
+  # Kept on a paid instance deliberately: free services sleep after 15 minutes
+  # of inactivity and take ~1 minute to wake, which reads as "the API is broken"
+  # to whoever on the team hits it first.
+  - type: web
+    name: erpgpt-api
+    runtime: docker
+    plan: starter
+    region: singapore
+    dockerfilePath: ./api/ErpGpt.GraphQLApi/Dockerfile
+    dockerContext: ./api/ErpGpt.GraphQLApi
+    healthCheckPath: /health
+    autoDeploy: true
+    # Only rebuild when the API actually changes — not on kb/ or docs/ commits.
+    buildFilters:
+      paths:
+        - api/ErpGpt.GraphQLApi/**
+    envVars:
+      # Program.cs translates this URL into an Npgsql connection string.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: erpgpt-db
+          property: connectionString
+
+  # ── Browser SQL client ────────────────────────────────────────────────────
+  # Free is fine here: it is opened occasionally, so a cold start is tolerable.
+  #
+  # --readonly rejects anything that would modify data, and --lock-session pins
+  # the UI to this one database so nobody can point it elsewhere. Both matter
+  # because this page is reachable without a password (see DEPLOY.md).
+  - type: web
+    name: erpgpt-db-ui
+    runtime: image
+    plan: free
+    region: singapore
+    image:
+      url: docker.io/sosedoff/pgweb:latest
+    # --ssl=require is mandatory: Render's Postgres refuses unencrypted
+    # connections, and pgweb otherwise dies with "SSL is not enabled on the
+    # server". The flag overrides whatever the URL implies.
+    dockerCommand: /usr/bin/pgweb --bind=0.0.0.0 --listen=10000 --readonly --lock-session --ssl=require
+    envVars:
+      # pgweb auto-connects from DATABASE_URL, so no flag is needed for it.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: erpgpt-db
+          property: connectionString
+
+databases:
+  # AdventureWorks restores to roughly 250 MB. The free plan would hold it, but
+  # free databases are deleted 30 days after creation — losing a shared test
+  # environment on a timer is not worth the $6/month.
+  - name: erpgpt-db
+    plan: basic-256mb
+    postgresMajorVersion: "16"
+    region: singapore
+    ipAllowList:
+      # Required so the team can restore the dump and attach DBeaver/pgAdmin
+      # from their own machines. Render still requires the generated password.
+      - source: 0.0.0.0/0
+        description: developer machines

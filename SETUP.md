@@ -84,8 +84,10 @@ press Cmd+Alt+Enter (or the Run button):
 **Browse Schema** in the same IDE lists every available operation with its
 parameters and descriptions — the full menu of what the API can do.
 
-> Note on dates: AdventureWorks order data runs roughly **2011–2014**, so
-> queries dated 2025/2026 return empty results. Use dates in that range.
+> Note on dates: this dump's order data runs **2022-05-30 → 2025-06-29**
+> (it is a date-shifted AdventureWorks, not the original 2011–2014 vintage).
+> Queries outside that window return empty results. Verify on your own copy
+> with `SELECT min(orderdate), max(orderdate) FROM sales.salesorderheader;`
 
 ### Straight SQL (for exploring the raw tables)
 

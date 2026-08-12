@@ -1,13 +1,21 @@
 using ErpGpt.GraphQLApi.Data;
 using ErpGpt.GraphQLApi.GraphQL;
+using HotChocolate.AspNetCore;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Managed hosts (Render, Railway, Fly) choose the port for us and pass it in.
+// Nothing sets PORT locally, so this is a no-op on a developer machine.
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrWhiteSpace(port))
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 // The API only ever reads. NoTracking means EF does not keep change-tracking
 // snapshots of every row it returns, which is both faster and a safety net.
 builder.Services.AddDbContextFactory<ErpDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("Erp"))
+    options.UseNpgsql(ResolveConnectionString(builder.Configuration))
            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
 
 builder.Services
@@ -74,6 +82,40 @@ app.MapGet("/health", async (IDbContextFactory<ErpDbContext> factory) =>
         : Results.Problem("Cannot reach the ERP database.", statusCode: 503);
 });
 
-app.MapGraphQL(); // GraphQL IDE at /graphql
+app.MapGraphQL() // GraphQL IDE at /graphql
+   // The IDE is how the team exercises the API, so it stays on when deployed —
+   // it is off by default outside Development.
+   .WithOptions(o => o.Tool.Enable = true);
 
 app.Run();
+
+// Managed Postgres is handed to the app as a single URL, and the host offers no
+// way to template it into appsettings. Npgsql only speaks key=value, so the URL
+// is translated here. Local development still reads ConnectionStrings:Erp.
+static string ResolveConnectionString(IConfiguration configuration)
+{
+    var url = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+    if (string.IsNullOrWhiteSpace(url))
+        return configuration.GetConnectionString("Erp")
+            ?? throw new InvalidOperationException(
+                "No database configured. Set DATABASE_URL or ConnectionStrings:Erp.");
+
+    var uri = new Uri(url);
+    var credentials = uri.UserInfo.Split(':', 2);
+
+    return new NpgsqlConnectionStringBuilder
+    {
+        Host = uri.Host,
+        Port = uri.Port > 0 ? uri.Port : 5432,
+        Database = uri.AbsolutePath.TrimStart('/'),
+        Username = Uri.UnescapeDataString(credentials[0]),
+        Password = credentials.Length > 1 ? Uri.UnescapeDataString(credentials[1]) : string.Empty,
+
+        // Hosted Postgres presents a certificate from its own CA, which the
+        // container has no reason to trust. Prefer encrypts when the server
+        // offers it without demanding a verifiable chain, and still leaves a
+        // plain local socket working — one setting covers both environments.
+        SslMode = SslMode.Prefer,
+    }.ConnectionString;
+}

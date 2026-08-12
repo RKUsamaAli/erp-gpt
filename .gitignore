@@ -14,6 +14,9 @@ venv/
 qdrant_storage/
 *.gguf
 
+# Dataset — 19 MB, distributed via the data-v1 GitHub release, not git
+adventureworks.dump
+
 # Logs (step 13 output — local only until we decide retention)
 agent/logs/
 *.jsonl
