@@ -12,24 +12,56 @@ var queryBuilder = new GraphQLValidatorAndBuilder();
 
 var pipeline = new AgentPipeline(contextResolver, planGenerator, queryBuilder);
 
-string sampleQuestion = "Who are our top 3 customers in Canada?";
+// Single-shot run via command line argument
 if (args.Length > 0)
 {
-    sampleQuestion = string.Join(" ", args);
+    string question = string.Join(" ", args);
+    await RunQuestionAsync(pipeline, question);
+    return;
 }
 
-Console.WriteLine($"Question: \"{sampleQuestion}\"");
+// Interactive Console Mode
+Console.WriteLine("\nInteractive Mode active. Type your ERP question below, or 'exit' to quit.\n");
 
-try
+while (true)
 {
-    var result = await pipeline.ExecuteAsync(sampleQuestion);
-    Console.WriteLine("\n=================================================");
-    Console.WriteLine("RESULT SUMMARY:");
-    Console.WriteLine($"Endpoint Picked: {result.RetrievedDocs.FirstOrDefault()?.EndpointName}");
-    Console.WriteLine($"GraphQL Query:\n{result.GraphQLQuery}");
-    Console.WriteLine("=================================================");
+    Console.ForegroundColor = ConsoleColor.Cyan;
+    Console.Write("\nAsk ERP-GPT > ");
+    Console.ResetColor();
+
+    string? input = Console.ReadLine();
+    if (string.IsNullOrWhiteSpace(input)) continue;
+    if (input.Trim().Equals("exit", StringComparison.OrdinalIgnoreCase) ||
+        input.Trim().Equals("quit", StringComparison.OrdinalIgnoreCase))
+    {
+        Console.WriteLine("Exiting ERP GPT Agent. Goodbye!");
+        break;
+    }
+
+    await RunQuestionAsync(pipeline, input.Trim());
 }
-catch (Exception ex)
+
+static async Task RunQuestionAsync(AgentPipeline pipeline, string question)
 {
-    Console.WriteLine($"\n[Pipeline Error]: {ex.Message}");
+    Console.ForegroundColor = ConsoleColor.Yellow;
+    Console.WriteLine($"\nProcessing Question: \"{question}\"");
+    Console.ResetColor();
+
+    try
+    {
+        var result = await pipeline.ExecuteAsync(question);
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("\n=================================================");
+        Console.WriteLine("RESULT SUMMARY:");
+        Console.WriteLine($"Endpoint Picked: {result.RetrievedDocs.FirstOrDefault()?.EndpointName}");
+        Console.WriteLine($"GraphQL Query:\n{result.GraphQLQuery}");
+        Console.WriteLine("=================================================");
+        Console.ResetColor();
+    }
+    catch (Exception ex)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine($"\n[Pipeline Error]: {ex.Message}");
+        Console.ResetColor();
+    }
 }

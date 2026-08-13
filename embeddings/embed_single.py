@@ -1,5 +1,6 @@
 import sys
 import json
+# pyrefly: ignore [missing-import]
 from sentence_transformers import SentenceTransformer
 
 def main():

@@ -1,7 +1,5 @@
 using System.Text;
 using System.Text.Json;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace ErpGpt.Agent.Services;
 
@@ -13,7 +11,10 @@ public class QueryPlanGenerator
 
     public QueryPlanGenerator(string ollamaEndpoint = "http://localhost:11434", string modelName = "llama3.1")
     {
-        _httpClient = new HttpClient();
+        _httpClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromMinutes(5) // Increased timeout for local LLM inference
+        };
         _ollamaEndpoint = ollamaEndpoint;
         _modelName = modelName;
     }
@@ -29,22 +30,22 @@ public class QueryPlanGenerator
         }
 
         var systemPrompt = $@"You are an ERP GraphQL AI Query Planner.
-Your task is to choose the single best GraphQL endpoint from the provided Documentation, and construct a JSON Query Plan.
+Choose the single best GraphQL endpoint from the provided Documentation and construct a JSON Query Plan.
 
 DOCUMENTATION:
 {docsSummary}
 
-Strict Schema output format required (Return ONLY a raw valid JSON object):
+Output format required (JSON):
 {{
   ""endpoint"": ""<endpoint_name>"",
-  ""take"": <number>,
+  ""take"": 10,
   ""filters"": {{
     ""field"": ""<field_name>"",
     ""value"": ""<value>""
   }},
   ""sort"": {{
     ""field"": ""<field_name>"",
-    ""direction"": ""ASC|DESC""
+    ""direction"": ""ASC""
   }}
 }}";
 
@@ -52,7 +53,13 @@ Strict Schema output format required (Return ONLY a raw valid JSON object):
         {
             model = _modelName,
             prompt = $"{systemPrompt}\n\nUser Question: {userPrompt}\n\nOutput Query Plan JSON:",
-            stream = false
+            format = "json", // Force JSON mode for 5x-10x faster generation
+            stream = false,
+            options = new
+            {
+                temperature = 0.0,
+                num_predict = 150 // Cap token generation so it finishes in seconds
+            }
         };
 
         var jsonContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");

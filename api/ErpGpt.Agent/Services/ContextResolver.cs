@@ -22,30 +22,59 @@ public class ContextResolver
 
         if (!File.Exists(scriptPath))
         {
-            // Fallback script path check
             scriptPath = Path.GetFullPath("embeddings/embed_single.py");
         }
 
-        var psi = new ProcessStartInfo
+        // Check for PYTHON_PATH env variable, or candidate python executables
+        string pythonExe = Environment.GetEnvironmentVariable("PYTHON_PATH") ?? "py";
+        
+        string output = "";
+        string error = "";
+        int exitCode = -1;
+
+        string[] candidates = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("PYTHON_PATH")) 
+            ? new[] { "py", "python", "python3" } 
+            : new[] { pythonExe };
+
+        foreach (var candidate in candidates)
         {
-            FileName = "python",
-            Arguments = $"\"{scriptPath}\" \"{text.Replace("\"", "\\\"")}\"",
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
+            try
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = candidate,
+                    Arguments = $"\"{scriptPath}\" \"{text.Replace("\"", "\\\"")}\"",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
 
-        using var process = Process.Start(psi);
-        if (process == null) throw new Exception("Failed to start python embedding process.");
+                using var process = Process.Start(psi);
+                if (process == null) continue;
 
-        string output = await process.StandardOutput.ReadToEndAsync();
-        string error = await process.StandardError.ReadToEndAsync();
-        await process.WaitForExitAsync();
+                output = await process.StandardOutput.ReadToEndAsync();
+                error = await process.StandardError.ReadToEndAsync();
+                await process.WaitForExitAsync();
+                exitCode = process.ExitCode;
 
-        if (process.ExitCode != 0)
+                if (exitCode == 0 && !string.IsNullOrWhiteSpace(output))
+                {
+                    break;
+                }
+            }
+            catch
+            {
+                // Try next candidate
+            }
+        }
+
+        if (exitCode != 0 || string.IsNullOrWhiteSpace(output))
         {
-            throw new Exception($"Embedding process failed: {error}");
+            throw new Exception(
+                $"Embedding process failed. Python could not be executed.\n" +
+                $"Details: {error}\n" +
+                $"Tip: Ensure Python is installed and in your PATH, or set the environment variable PYTHON_PATH to your python.exe location.");
         }
 
         var vector = JsonSerializer.Deserialize<float[]>(output.Trim());

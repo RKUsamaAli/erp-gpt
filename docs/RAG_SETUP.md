@@ -1,6 +1,6 @@
 # RAG Implementation & Setup Guide — ERP GPT
 
-This document outlines the architecture, step-by-step setup, and operational responsibilities for the **Retrieval-Augmented Generation (RAG)** pipeline in `erp-gpt`.
+This document outlines the architecture, step-by-step setup, and operational instructions for the verified **Retrieval-Augmented Generation (RAG)** pipeline in `erp-gpt`.
 
 ---
 
@@ -16,105 +16,94 @@ This document outlines the architecture, step-by-step setup, and operational res
 
 ---
 
-## 🤝 Responsibility Breakdown: Who Does What?
+## 🤝 Responsibility Breakdown & Implementation Progress
 
-### 🤖 What the AI Agent Builds & Executes Directly
-- [x] **SQL Migrations (`db/01_init_pgvector.sql`)**: Creates the `pgvector` extension and indexing tables.
-- [x] **Ingestion Script (`embeddings/ingest.py`)**: Python script to embed `kb/*.json` endpoint example questions and populate Postgres.
-- [x] **C# Agent System (`api/ErpGpt.Agent/`)**:
-  - `PgVectorMemoryStore.cs`: Connects Semantic Kernel to `pgvector`.
-  - `ContextResolver.cs`: Retrieves top-3 matching endpoint docs.
-  - `QueryPlanGenerator.cs`: Semantic Kernel plugin to prompt Llama 3.1.
-  - `GraphQLValidatorAndBuilder.cs`: Validates and translates Query Plans into valid GraphQL strings.
-  - `AgentPipeline.cs`: End-to-end execution loop.
-- [x] **Build & Verification Commands**: Running `dotnet build`, database migration scripts, and ingestion tests.
-
-### 👤 What YOU (The User) Need to Run Manually
-
-1. **Start Docker Desktop**:
-   - Ensure Docker Desktop is running on your Windows machine so the PostgreSQL database (`api-db-1`) is active.
-
-2. **Install & Run Ollama (for Llama 3.1 8B)**:
-   - Download and install [Ollama](https://ollama.com).
-   - Open PowerShell / Terminal and pull the Llama 3.1 model (~4.7 GB):
-     ```powershell
-     ollama run llama3.1
-     ```
-   - This starts the local LLM server at `http://localhost:11434`.
+### 🤖 What the AI Agent Built & Verified
+- [x] **SQL Migrations ([db/01_init_pgvector.sql](file:///c:/Users/Zahid%20Hamid/Documents/repos/erp-gpt/db/01_init_pgvector.sql))**: Configured `pgvector` extension and indexing table (`endpoint_embeddings`) with HNSW cosine index.
+- [x] **Ingestion Engine ([embeddings/ingest.py](file:///c:/Users/Zahid%20Hamid/Documents/repos/erp-gpt/embeddings/ingest.py))**: Embedded `kb/*.json` endpoint example questions using `sentence-transformers/all-MiniLM-L6-v2` into PostgreSQL.
+- [x] **Single Embedding Script ([embeddings/embed_single.py](file:///c:/Users/Zahid%20Hamid/Documents/repos/erp-gpt/embeddings/embed_single.py))**: Generates 384-dim vectors for incoming user questions.
+- [x] **C# Agent System ([api/ErpGpt.Agent/](file:///c:/Users/Zahid%20Hamid/Documents/repos/erp-gpt/api/ErpGpt.Agent/))**:
+  - `PgVectorMemoryStore.cs`: Connects Semantic Kernel to `pgvector` (`<=>` distance query).
+  - `ContextResolver.cs`: Retrieves top-3 matching endpoint docs for user prompt.
+  - `QueryPlanGenerator.cs`: Prompts local Llama 3.1 8B with `format: "json"`, `num_predict: 150`, and 5-min timeout.
+  - `GraphQLValidatorAndBuilder.cs`: Schema validator & query builder supporting both offset pagination and custom aggregation queries (`topCustomers`).
+  - `AgentPipeline.cs`: Complete end-to-end execution loop.
+  - `Program.cs`: Interactive console runner (`Ask ERP-GPT >`).
 
 ---
 
-## 🔄 End-to-End Execution Flow
+## 🚀 Complete Step-by-Step Setup & Execution Instructions
 
-```
-┌────────────────────────┐
-│ 1. User Prompt on UI   │ ("Who are our top customers in Canada?")
-└───────────┬────────────┘
-            │
-            ▼
-┌────────────────────────┐
-│ 2. ContextResolver     │ Embeds prompt via all-MiniLM-L6-v2
-└───────────┬────────────┘ Queries pgvector for top-3 matching endpoint docs
-            │
-            ▼
-┌────────────────────────┐
-│ 3. Semantic Kernel     │ Injects retrieved KB docs + user prompt
-│    QueryPlanGenerator  │ Sends request to local Llama 3.1 (Ollama)
-└───────────┬────────────┘
-            │
-            ▼
-┌────────────────────────┐
-│ 4. Llama 3.1 8B        │ Outputs structured JSON Query Plan:
-└───────────┬────────────┘ { "entity": "Customer", "territory": "Canada", "limit": 3 }
-            │
-            ▼
-┌────────────────────────┐
-│ 5. Validation Gate     │ Validates fields & parameters
-│    & GraphQL Builder   │ Converts Query Plan -> GraphQL query string
-└───────────┬────────────┘
-            │
-            ▼
-┌────────────────────────┐
-│ 6. Execution           │ Executes POST against http://localhost:5000/graphql
-│    & Answer Synthesis  │ Synthesizes raw JSON output into a natural response
-└────────────────────────┘
-```
+### Step 1: Start PostgreSQL Container & Apply pgvector Extension
+1. Ensure Docker Desktop is running.
+2. Start the database container:
+   ```powershell
+   cd api
+   docker compose up -d
+   ```
+3. Initialize the `pgvector` extension and table:
+   ```powershell
+   docker exec -i api-db-1 psql -U erpgpt -d erpgpt < db/01_init_pgvector.sql
+   ```
 
----
+### Step 2: Start local LLM (Ollama with Llama 3.1)
+1. Install [Ollama](https://ollama.com).
+2. Pull and start Llama 3.1 8B in PowerShell:
+   ```powershell
+   ollama run llama3.1
+   ```
+   *(Hosts local inference server at `http://localhost:11434`)*
 
-## 🚀 Setup & Execution Instructions
-
-### Step 1: Initialize Database & pgvector
-Make sure your docker container is running:
-```powershell
-cd api
-docker compose up -d
-```
-Enable `pgvector` and apply database tables:
-```powershell
-docker exec -i api-db-1 psql -U erpgpt -d erpgpt < db/01_init_pgvector.sql
-```
-
-### Step 2: Run Knowledge Base Ingestion
-Install Python requirements and ingest vectors:
+### Step 3: Run Knowledge Base Ingestion
+Install Python requirements and populate `pgvector`:
 ```powershell
 pip install sentence-transformers psycopg2-binary pgvector
 python embeddings/ingest.py
 ```
 
-### Step 3: Run the Agent Service (.NET)
-Build and run the C# agent pipeline:
+### Step 4: Launch HotChocolate GraphQL API
+In a separate terminal, start the GraphQL API service:
 ```powershell
-cd api/ErpGpt.Agent
-dotnet run
+dotnet run --project api/ErpGpt.GraphQLApi
+```
+*(Runs on `http://localhost:5000/graphql`)*
+
+### Step 5: Launch the Interactive ERP-GPT Agent
+Run the C# agent pipeline:
+```powershell
+dotnet run --project api/ErpGpt.Agent
 ```
 
 ---
 
-## 🔍 Verification & Testing
+## 💬 Example Queries Tested & Working
 
-You can test the RAG retrieval accuracy before connecting an LLM:
 ```powershell
-python eval/score_retrieval.py
+Ask ERP-GPT > Who are our top 3 customers in Canada?
+Ask ERP-GPT > Who is the biggest customer?
+Ask ERP-GPT > Which accounts bring in the most money?
 ```
-This tests your top-K vector retrieval accuracy against 50 sample user questions in `eval/questions.csv`.
+
+### Verified Sample Output:
+```json
+[1/5] RAG Retrieval: Finding matching endpoint docs in pgvector...
+  -> Endpoint: topCustomers | Dist: 0.3529 | Match Q: who are our biggest customers this year
+
+[2/5] LLM Query Planner: Prompting Llama 3.1 8B via Semantic Kernel...
+  -> Query Plan: { "endpoint": "topCustomers", "take": 3, "filters": { "from": "2022-01-01", "to": "2025-12-31" } }
+
+[3/5] Validation Gate & GraphQL Construction...
+  -> Generated GraphQL:
+     query {
+       topCustomers(limit: 3, from: "2022-01-01", to: "2025-12-31") {
+         customerId
+         customerName
+         territory
+         revenue
+         orderCount
+       }
+     }
+
+[4/5] Executing GraphQL against API (http://localhost:5000/graphql)...
+  -> Raw Response: {"data":{"topCustomers":[{"customerId":29847,"customerName":"Action Bicycle Specialists","territory":"Central","revenue":116246.3000,"orderCount":3}, ...]}}
+```

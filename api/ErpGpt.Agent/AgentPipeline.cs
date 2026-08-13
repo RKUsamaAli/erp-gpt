@@ -50,7 +50,7 @@ public class AgentPipeline
         Console.WriteLine($"  -> Query Plan: {queryPlanJson}");
 
         Console.WriteLine($"\n[3/5] Validation Gate & GraphQL Construction...");
-        var graphQlQuery = _queryBuilder.BuildGraphQLQuery(queryPlanJson);
+        var graphQlQuery = _queryBuilder.BuildGraphQLQuery(queryPlanJson, retrievedDocs.FirstOrDefault());
         Console.WriteLine($"  -> Generated GraphQL:\n{graphQlQuery}");
 
         Console.WriteLine($"\n[4/5] Executing GraphQL against API ({_graphQlApiUrl})...");

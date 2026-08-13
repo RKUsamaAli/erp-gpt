@@ -16,7 +16,7 @@
     "sab se baray customers kaun hain",
     "hamara sab se bara client kaun hai revenue ke hisaab se"
   ],
-  "graphql": "query TopCustomers($limit: Int, $from: Date!, $to: Date!, $orderBy: CustomerOrder) { topCustomers(limit: $limit, from: $from, to: $to, orderBy: $orderBy) { name totalRevenue orderCount } }",
+  "graphql": "query TopCustomers($limit: Int, $from: Date!, $to: Date!, $orderBy: CustomerOrder) { topCustomers(limit: $limit, from: $from, to: $to, orderBy: $orderBy) { customerId customerName territory revenue orderCount } }",
   "returns": "List of customer names with summed revenue and order count for the period, highest first.",
   "do_not_use_when": "The user names one specific customer — use customerDetail instead. The user asks about revenue over time rather than a ranking — use revenueByPeriod.",
   "notes": "If the user says 'this year' resolve to Jan 1 of the current year through today. 'Last quarter' means the previous complete calendar quarter."
