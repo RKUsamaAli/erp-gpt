@@ -1,32 +1,33 @@
 """
-KB ingestion: kb/*.json  →  embeddings  →  vector DB.
+KB ingestion: kb/*.json  →  all-MiniLM-L6-v2 embeddings  →  pgvector (PostgreSQL).
 
 Run at build time, and re-run whenever a KB file changes. Idempotent —
-wipes and rebuilds the collection (it's ~100 tiny vectors; rebuilding is
-cheaper than diffing).
+wipes and rebuilds the endpoint_embeddings table.
 
-THE DESIGN DECISION THAT MATTERS:
-  We embed each example_question as its OWN vector, all pointing back to the
-  parent endpoint. We do NOT embed the whole JSON blob — type annotations and
-  param metadata are noise that dilutes meaning. Matching a user question
-  against example questions beats matching it against a technical description.
-
-Stack (Phase 2 decision, current default):
+Stack:
   - embedding model: sentence-transformers/all-MiniLM-L6-v2 (384-dim, fast, local)
-    or BAAI/bge-small-en-v1.5 — pick ONE and use the same in eval/score_retrieval.py
-  - vector DB: Qdrant (docker run -p 6333:6333 qdrant/qdrant)
-    pgvector also fine if we'd rather stay inside Postgres
+  - vector DB: pgvector extension in Postgres (erpgpt database)
 
 Usage:
-    pip install sentence-transformers qdrant-client
+    pip install sentence-transformers psycopg2-binary pgvector
     python ingest.py
 """
 
 import json
+import os
 from pathlib import Path
+# pyrefly: ignore [missing-import]
+from sentence_transformers import SentenceTransformer
+import psycopg2
+# pyrefly: ignore [missing-import]
+from pgvector.psycopg2 import register_vector
 
 KB_DIR = Path(__file__).parent.parent / "kb"
-COLLECTION = "erp_gpt_endpoints"
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = os.getenv("DB_PORT", "5432")
+DB_NAME = os.getenv("DB_NAME", "erpgpt")
+DB_USER = os.getenv("DB_USER", "erpgpt")
+DB_PASS = os.getenv("DB_PASS", "devonly")
 
 
 def load_kb() -> list[dict]:
@@ -53,26 +54,60 @@ def build_points(docs: list[dict]) -> list[dict]:
 def main():
     docs = load_kb()
     points = build_points(docs)
-    print(f"{len(docs)} endpoints → {len(points)} vectors to embed")
+    print(f"Loaded {len(docs)} endpoint docs → {len(points)} question vectors to embed.")
 
-    # TODO (Phase 2): wire up —
-    # from sentence_transformers import SentenceTransformer
-    # from qdrant_client import QdrantClient
-    # from qdrant_client.models import Distance, VectorParams, PointStruct
-    #
-    # model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
-    # client = QdrantClient("localhost", port=6333)
-    # client.recreate_collection(
-    #     COLLECTION,
-    #     vectors_config=VectorParams(size=384, distance=Distance.COSINE),
-    # )
-    # vectors = model.encode([p["text"] for p in points], normalize_embeddings=True)
-    # client.upsert(COLLECTION, points=[
-    #     PointStruct(id=i, vector=v.tolist(),
-    #                 payload={"endpoint": p["endpoint"], "question": p["text"], "doc": p["doc"]})
-    #     for i, (p, v) in enumerate(zip(points, vectors))
-    # ])
-    print("TODO: wire embedding model + Qdrant (see comments)")
+    print("Loading embedding model 'sentence-transformers/all-MiniLM-L6-v2'...")
+    model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+
+    texts = [p["text"] for p in points]
+    vectors = model.encode(texts, normalize_embeddings=True)
+
+    print(f"Connecting to PostgreSQL pgvector database ({DB_HOST}:{DB_PORT}/{DB_NAME})...")
+    conn = psycopg2.connect(
+        host=DB_HOST,
+        port=DB_PORT,
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASS
+    )
+    conn.autocommit = True
+    cur = conn.cursor()
+
+    cur.execute("CREATE EXTENSION IF NOT EXISTS vector;")
+    register_vector(conn)
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS endpoint_embeddings (
+            id SERIAL PRIMARY KEY,
+            endpoint_name VARCHAR(100) NOT NULL,
+            question TEXT NOT NULL,
+            payload JSONB NOT NULL,
+            embedding vector(384)
+        );
+    """)
+
+    print("Trimming existing vectors for clean ingestion...")
+    cur.execute("TRUNCATE TABLE endpoint_embeddings;")
+
+    print("Inserting vector embeddings into pgvector...")
+    for p, vec in zip(points, vectors):
+        cur.execute(
+            """
+            INSERT INTO endpoint_embeddings (endpoint_name, question, payload, embedding)
+            VALUES (%s, %s, %s, %s);
+            """,
+            (p["endpoint"], p["text"], json.dumps(p["doc"]), vec.tolist())
+        )
+
+    print("Creating HNSW vector index...")
+    cur.execute("""
+        CREATE INDEX IF NOT EXISTS idx_endpoint_embeddings_hnsw 
+        ON endpoint_embeddings USING hnsw (embedding vector_cosine_ops);
+    """)
+
+    cur.close()
+    conn.close()
+    print("✅ Ingestion complete! Successfully stored vectors in pgvector.")
 
 
 if __name__ == "__main__":
