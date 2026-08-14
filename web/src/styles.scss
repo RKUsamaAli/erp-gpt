@@ -1,0 +1,52 @@
+/* Global theme */
+:root {
+  --surface-0: #0b0c0e;
+  --surface-1: #141518;
+  --surface-2: #1c1e22;
+  --surface-3: #26282e;
+  --border: #2b2d33;
+  --border-soft: #202226;
+  --text-primary: #f1f1f3;
+  --text-secondary: #9a9ba5;
+  --accent: #6a8bff;
+  --accent-2: #8f6bff;
+  --accent-soft: #4f7fff;
+  --danger: #ff6b6b;
+  --success: #3ecf8e;
+  --shadow-color: rgba(0, 0, 0, 0.45);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: radial-gradient(circle at 20% 0%, #171a22 0%, var(--surface-0) 45%),
+    var(--surface-0);
+  color: var(--text-primary);
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+app-root {
+  display: block;
+  height: 100vh;
+}
+
+button {
+  font-family: inherit;
+}

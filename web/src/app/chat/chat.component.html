@@ -1,0 +1,148 @@
+<div class="chat">
+  <header class="chat__header">
+    <div class="chat__brand">
+      <span class="chat__brand-icon">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+          <path
+            d="M4 4h16v11.5a1.5 1.5 0 0 1-1.5 1.5H9l-4 4v-4H5.5A1.5 1.5 0 0 1 4 15.5V4Z"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </span>
+      <div class="chat__brand-text">
+        <span class="chat__brand-title">GraphQL Assistant</span>
+        <span class="chat__brand-subtitle">
+          <span class="chat__status-dot" [class.chat__status-dot--busy]="isLoading()"></span>
+          {{ isLoading() ? 'Thinking…' : 'Online' }}
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <div class="chat__history" #historyEl>
+    @if (messages().length === 0) {
+      <div class="chat__empty">
+        <div class="chat__empty-icon">✦</div>
+        <div class="chat__empty-title">How can I help today?</div>
+        <p class="chat__empty-subtitle">
+          Ask a question and it will be sent to a GraphQL API — the answer appears right here.
+        </p>
+        <div class="chat__suggestions">
+          @for (suggestion of suggestions; track suggestion) {
+            <button
+              type="button"
+              class="chat__suggestion"
+              (click)="useSuggestion(suggestion)"
+            >
+              {{ suggestion }}
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    @for (message of messages(); track $index) {
+      <div class="message message--{{ message.role }}" [class.message--error]="message.isError">
+        <div class="message__avatar">
+          @if (message.role === 'user') {
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
+              <path
+                d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          } @else {
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
+              <path
+                d="M12 3v3m0 12v3M4.2 4.2l2.1 2.1m11.4 11.4 2.1 2.1M3 12h3m12 0h3M4.2 19.8l2.1-2.1m11.4-11.4 2.1-2.1"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
+              <circle cx="12" cy="12" r="3.4" stroke="currentColor" stroke-width="1.5" />
+            </svg>
+          }
+        </div>
+        <div class="message__col">
+          <div class="message__bubble">{{ message.text }}</div>
+          <div class="message__meta">
+            <span class="message__time">{{ message.time }}</span>
+            @if (message.role === 'assistant' && !message.isError) {
+              <button
+                type="button"
+                class="message__copy"
+                (click)="copyMessage(message.text, $index)"
+                aria-label="Copy response"
+              >
+                {{ copiedIndex() === $index ? 'Copied' : 'Copy' }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (isLoading()) {
+      <div class="message message--assistant">
+        <div class="message__avatar message__avatar--pulse">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
+            <path
+              d="M12 3v3m0 12v3M4.2 4.2l2.1 2.1m11.4 11.4 2.1 2.1M3 12h3m12 0h3M4.2 19.8l2.1-2.1m11.4-11.4 2.1-2.1"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
+            <circle cx="12" cy="12" r="3.4" stroke="currentColor" stroke-width="1.5" />
+          </svg>
+        </div>
+        <div class="message__bubble message__bubble--typing">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <form class="chat__input" (submit)="$event.preventDefault(); send()">
+    <div class="chat__composer">
+      <textarea
+        #promptEl
+        class="chat__textarea"
+        rows="1"
+        placeholder="Message GraphQL Assistant…"
+        [ngModel]="prompt()"
+        name="prompt"
+        (ngModelChange)="onInput($event)"
+        (keydown)="onKeydown($event)"
+        [disabled]="isLoading()"
+      ></textarea>
+      <button
+        type="submit"
+        class="chat__send"
+        [disabled]="isLoading() || !prompt().trim()"
+        aria-label="Send message"
+      >
+        @if (isLoading()) {
+          <span class="spinner"></span>
+        } @else {
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+            <path
+              d="M4 12L20 4L14 20L11 13L4 12Z"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linejoin="round"
+              stroke-linecap="round"
+            />
+          </svg>
+        }
+      </button>
+    </div>
+    <div class="chat__hint">Press Enter to send · Shift+Enter for a new line</div>
+  </form>
+</div>
