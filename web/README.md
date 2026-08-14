@@ -1,6 +1,10 @@
-# ChatApp
+# ERP GPT — web
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.2.0.
+Angular chat UI for [erp-gpt](../README.md). Ask the ERP a question in plain
+language; the answer comes back from live data.
+
+Originally generated with [Angular CLI](https://github.com/angular/angular-cli)
+20.2.0; now on Angular 21.2.x. Implementation plan: [`doc/web-plan.md`](doc/web-plan.md).
 
 ## Development server
 
