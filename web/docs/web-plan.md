@@ -174,7 +174,7 @@ Flag notes:
 ### Bootstrap 5
 
 ```bash
-cd web && npm install bootstrap@5 bootstrap-icons
+cd web && npm install bootstrap@5
 ```
 
 Wire it in `angular.json` under `projects.web.architect.build.options`:
@@ -182,11 +182,16 @@ Wire it in `angular.json` under `projects.web.architect.build.options`:
 ```json
 "styles": [
   "node_modules/bootstrap/dist/css/bootstrap.min.css",
-  "node_modules/bootstrap-icons/font/bootstrap-icons.css",
   "src/styles.scss"
 ],
 "scripts": ["node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"]
 ```
+
+> **bootstrap-icons was tried and removed.** Every icon in the app is inline
+> SVG, so the package contributed ~97 kB of CSS declaring ~2000 unused classes
+> plus ~314 kB of font files nothing could ever request. Dropping it put the
+> bundle back under the stock 500 kB budget. Add it only alongside markup that
+> actually uses `bi-*` classes.
 
 The `scripts` entry is only needed for Bootstrap's JS components (dropdown, modal,
 offcanvas). The offcanvas sidebar on mobile uses it — keep it.
@@ -238,9 +243,25 @@ a one-line provider change.
 
 ```ts
 export interface ChatService {
-  ask(question: string, threadId: string): Observable<AnswerChunk>;
+  ask(request: AskRequest): Observable<AnswerChunk>;
+  readonly suggestions: readonly string[];
 }
 ```
+
+As built, two refinements to the sketch above:
+
+- **`ask` takes an object.** There are no threads yet, and the real backend will
+  need conversation history, so an object grows without breaking call sites.
+- **`suggestions` belongs to the service.** Only the implementation knows what it
+  can answer; a chip the backend does not recognise silently falls through to the
+  generic reply. `MockChatService` derives them from its own matchers, so they
+  cannot drift.
+
+`AnswerChunk` is `text-delta | block` — **no `error` variant.** Failures travel on
+the Observable's error channel so the mock and the real service fail identically
+and consumers have one place to handle it. Chunk-to-message assembly is the pure
+`appendChunk(blocks, chunk)` in `chat.models.ts`, not component state, since every
+consumer of a `ChatService` needs the same folding.
 
 Provided by DI token so the swap is config, not a rewrite:
 

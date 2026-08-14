@@ -1,6 +1,19 @@
 import { fakeAsync, tick } from '@angular/core/testing';
-import { AnswerBlock, AnswerChunk } from '../models/chat.models';
+import { AnswerBlock, AnswerChunk, appendChunk } from '../models/chat.models';
 import { MockChatService } from './mock-chat-service';
+
+/** Whole blocks (tables, lists) emitted during the answer. */
+function blocksOf(chunks: AnswerChunk[]): AnswerBlock[] {
+  return chunks.filter((c) => c.kind === 'block').map((c) => c.block);
+}
+
+/** Everything that was typed out, concatenated. */
+function deltaText(chunks: AnswerChunk[]): string {
+  return chunks
+    .filter((c) => c.kind === 'text-delta')
+    .map((c) => c.text)
+    .join('');
+}
 
 describe('MockChatService', () => {
   let service: MockChatService;
@@ -10,12 +23,17 @@ describe('MockChatService', () => {
   });
 
   /** Drains a full answer synchronously. */
-  function collect(question: string): { chunks: AnswerChunk[]; done: boolean } {
+  function collect(question: string): { chunks: AnswerChunk[]; done: boolean; error?: Error } {
     const chunks: AnswerChunk[] = [];
     let done = false;
-    service.ask({ question }).subscribe({ next: (c) => chunks.push(c), complete: () => (done = true) });
+    let error: Error | undefined;
+    service.ask({ question }).subscribe({
+      next: (c) => chunks.push(c),
+      complete: () => (done = true),
+      error: (e: Error) => (error = e),
+    });
     tick(60_000);
-    return { chunks, done };
+    return { chunks, done, error };
   }
 
   it('emits chunks and then completes', fakeAsync(() => {
@@ -26,12 +44,9 @@ describe('MockChatService', () => {
   }));
 
   it('answers the top-customers question with the 3-header, 5-row table', fakeAsync(() => {
-    const { chunks } = collect('Show top 5 customers by revenue this quarter');
-
-    const tables = chunks
-      .filter((c): c is Extract<AnswerChunk, { kind: 'block' }> => c.kind === 'block')
-      .map((c) => c.block)
-      .filter((b): b is Extract<AnswerBlock, { kind: 'table' }> => b.kind === 'table');
+    const tables = blocksOf(collect('Show top 5 customers by revenue this quarter').chunks).filter(
+      (b) => b.kind === 'table',
+    );
 
     expect(tables.length).toBe(1);
     expect(tables[0].headers).toEqual(['Customer', 'Territory', 'Revenue']);
@@ -39,40 +54,25 @@ describe('MockChatService', () => {
   }));
 
   it('emits a table as ONE block, never typed out character by character', fakeAsync(() => {
-    const { chunks } = collect('top customers');
-
-    // Every delta must belong to a text block; a table arriving as deltas would
-    // mean the two-speed streaming from demo/index.html was lost.
-    const deltas = chunks.filter((c) => c.kind === 'text-delta');
-    expect(deltas.every((c) => !c.text.includes('Adventure Works Cycle'))).toBeTrue();
+    // A table arriving as deltas would mean the two-speed streaming from
+    // demo/index.html was lost.
+    expect(deltaText(collect('top customers').chunks)).not.toContain('Adventure Works Cycle');
   }));
 
-  it('each suggestion chip gets its own answer, never the fallback', fakeAsync(() => {
-    const questions = [
-      'Show top 5 customers by revenue this quarter',
-      'What were total sales in Canada last month?',
-      'List products with low stock in the Bikes category',
-    ];
+  it('offers only suggestions it can actually answer', fakeAsync(() => {
+    const openings = service.suggestions.map((q) => deltaText(collect(q).chunks).split('\n')[0]);
 
-    const firstLines = questions.map(
-      (q) =>
-        collect(q)
-          .chunks.filter((c): c is Extract<AnswerChunk, { kind: 'text-delta' }> => c.kind === 'text-delta')
-          .map((c) => c.text)
-          .join('')
-          .split('\n')[0],
-    );
-
-    expect(new Set(firstLines).size).toBe(3);
-    expect(firstLines.some((line) => line.includes('simulated'))).toBeFalse();
+    expect(service.suggestions.length).toBe(3);
+    expect(new Set(openings).size).toBe(3);
+    expect(openings.some((line) => line.includes('simulated'))).toBeFalse();
   }));
 
-  it('emits an error chunk for the "fail" trigger', fakeAsync(() => {
-    const { chunks, done } = collect('fail');
+  it('fails on the error channel for the "fail" trigger', fakeAsync(() => {
+    const { chunks, error, done } = collect('fail');
 
-    expect(chunks.length).toBe(1);
-    expect(chunks[0].kind).toBe('error');
-    expect(done).toBeTrue();
+    expect(chunks.length).toBe(0);
+    expect(error?.message).toBe('Simulated backend failure.');
+    expect(done).toBeFalse();
   }));
 
   // The one that matters: without it, the Stop button is aspirational.
@@ -89,4 +89,40 @@ describe('MockChatService', () => {
 
     expect(chunks.length).toBe(countAtStop);
   }));
+});
+
+describe('appendChunk', () => {
+  const text = (t: string): AnswerChunk => ({ kind: 'text-delta', text: t });
+  const table: AnswerBlock = { kind: 'table', headers: ['a'], rows: [['1']] };
+
+  it('starts a text block when there is nothing to extend', () => {
+    expect(appendChunk([], text('Hi'))).toEqual([{ kind: 'text', text: 'Hi' }]);
+  });
+
+  it('extends the trailing text block rather than adding another', () => {
+    const blocks = appendChunk(appendChunk([], text('Hi ')), text('there'));
+
+    expect(blocks).toEqual([{ kind: 'text', text: 'Hi there' }]);
+  });
+
+  it('starts a new text block after a table', () => {
+    const blocks = appendChunk(appendChunk([], { kind: 'block', block: table }), text('After'));
+
+    expect(blocks.length).toBe(2);
+    expect(blocks[1]).toEqual({ kind: 'text', text: 'After' });
+  });
+
+  it('leaves earlier blocks referentially stable, so OnPush can skip them', () => {
+    const first = appendChunk([], { kind: 'block', block: table });
+    const second = appendChunk(first, text('After'));
+
+    expect(second[0]).toBe(first[0]);
+  });
+
+  it('does not mutate the input', () => {
+    const before: AnswerBlock[] = [{ kind: 'text', text: 'a' }];
+    appendChunk(before, text('b'));
+
+    expect(before).toEqual([{ kind: 'text', text: 'a' }]);
+  });
 });

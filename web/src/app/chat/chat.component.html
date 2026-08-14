@@ -71,12 +71,8 @@
         </div>
         <div class="message__col">
           <div class="message__bubble">
-            @if (message.role === 'user') {
-              <span class="message__text">{{ plain(message.blocks) }}</span>
-            } @else {
-              @for (block of message.blocks; track $index) {
-                <app-answer-block [block]="block" />
-              }
+            @for (block of message.blocks; track $index) {
+              <app-answer-block [block]="block" />
             }
           </div>
           <div class="message__meta">

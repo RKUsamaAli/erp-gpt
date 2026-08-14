@@ -12,18 +12,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Subscription, finalize } from 'rxjs';
 import { CHAT_SERVICE } from '../core/chat-service';
-import { AnswerBlock, AnswerChunk, ChatMessage, blocksToText } from '../models/chat.models';
+import { AnswerBlock, AnswerChunk, ChatMessage, appendChunk, blocksToText } from '../models/chat.models';
 import { AnswerBlockComponent } from './answer-block/answer-block.component';
-
-/**
- * These must stay in step with MockChatService's matchers — a suggestion that
- * matches nothing returns the fallback, which makes the chips look broken.
- */
-const SUGGESTIONS = [
-  'Show top 5 customers by revenue this quarter',
-  'What were total sales in Canada last month?',
-  'List products with low stock in the Bikes category',
-];
 
 @Component({
   selector: 'app-chat',
@@ -42,7 +32,7 @@ export class ChatComponent implements AfterViewChecked {
   readonly messages = signal<ChatMessage[]>([]);
   readonly prompt = signal('');
   readonly isLoading = signal(false);
-  readonly suggestions = SUGGESTIONS;
+  readonly suggestions = this.chat.suggestions;
   readonly copiedIndex = signal<number | null>(null);
 
   /**
@@ -57,14 +47,9 @@ export class ChatComponent implements AfterViewChecked {
     return !last || last.role === 'user';
   });
 
-  /** Exposed for the template: user bubbles render as plain text. */
-  readonly plain = blocksToText;
-
   private shouldScroll = false;
   /** The in-flight request, so Stop can cancel it. */
   private stream?: Subscription;
-  /** Whether the trailing message is an assistant turn still being filled. */
-  private assistantOpen = false;
 
   ngAfterViewChecked(): void {
     if (this.shouldScroll && this.historyEl) {
@@ -92,7 +77,6 @@ export class ChatComponent implements AfterViewChecked {
     this.prompt.set('');
     this.resizeTextarea();
     this.isLoading.set(true);
-    this.assistantOpen = false;
     this.shouldScroll = true;
 
     this.stream = this.chat
@@ -104,8 +88,6 @@ export class ChatComponent implements AfterViewChecked {
         // disabled composer.
         finalize(() => {
           this.isLoading.set(false);
-          this.assistantOpen = false;
-          this.stream = undefined;
           this.shouldScroll = true;
           this.promptEl?.nativeElement.focus();
         }),
@@ -144,68 +126,45 @@ export class ChatComponent implements AfterViewChecked {
     this.resizeTextarea();
   }
 
+  /**
+   * Folds a chunk into the answer being streamed, opening the assistant turn on
+   * the first one. Single update, so "which message" and "which block" are
+   * decided in one place from the array that is already in hand.
+   */
   private applyChunk(chunk: AnswerChunk): void {
-    if (chunk.kind === 'error') {
-      this.pushError(chunk.message);
-      return;
-    }
-
-    this.openAssistantMessage();
     this.messages.update((msgs) => {
-      const next = [...msgs];
-      const last = next[next.length - 1];
-      const blocks = [...last.blocks];
-
-      if (chunk.kind === 'text-delta') {
-        const tail = blocks[blocks.length - 1];
-        // Append to the trailing text block, or start a new one if the
-        // previous block was a table or list.
-        if (tail?.kind === 'text') {
-          blocks[blocks.length - 1] = { kind: 'text', text: tail.text + chunk.text };
-        } else {
-          blocks.push({ kind: 'text', text: chunk.text });
-        }
-      } else {
-        blocks.push(chunk.block);
-      }
-
-      next[next.length - 1] = { ...last, blocks };
-      return next;
+      const open = this.openAssistantTurn(msgs);
+      const rest = open ? msgs.slice(0, -1) : msgs;
+      const target: ChatMessage = open ?? { role: 'assistant', blocks: [], time: this.now() };
+      return [...rest, { ...target, blocks: appendChunk(target.blocks, chunk) }];
     });
     this.shouldScroll = true;
-  }
-
-  private openAssistantMessage(): void {
-    if (this.assistantOpen) {
-      return;
-    }
-    this.messages.update((msgs) => [
-      ...msgs,
-      { role: 'assistant', blocks: [], time: this.now() },
-    ]);
-    this.assistantOpen = true;
   }
 
   private pushError(message: string): void {
-    const error: ChatMessage = {
-      role: 'assistant',
-      blocks: [{ kind: 'text', text: message }],
-      isError: true,
-      time: this.now(),
-    };
-
     this.messages.update((msgs) => {
-      const last = msgs[msgs.length - 1];
+      const open = this.openAssistantTurn(msgs);
       // If the answer failed before producing anything, replace the empty
       // bubble rather than leaving a blank one above the error.
-      if (this.assistantOpen && last?.role === 'assistant' && last.blocks.length === 0) {
-        return [...msgs.slice(0, -1), error];
-      }
-      return [...msgs, error];
+      const rest = open && open.blocks.length === 0 ? msgs.slice(0, -1) : msgs;
+      return [
+        ...rest,
+        { role: 'assistant', blocks: [{ kind: 'text', text: message }], isError: true, time: this.now() },
+      ];
     });
-
-    this.assistantOpen = false;
     this.shouldScroll = true;
+  }
+
+  /**
+   * The assistant turn currently being filled, if there is one — derived from
+   * the messages themselves rather than tracked in a parallel flag that has to
+   * be kept in lockstep with them.
+   */
+  private openAssistantTurn(msgs: ChatMessage[]): ChatMessage | undefined {
+    // send() always appends the user's message first, so a trailing assistant
+    // turn can only belong to the answer in flight.
+    const last = msgs[msgs.length - 1];
+    return last?.role === 'assistant' && !last.isError ? last : undefined;
   }
 
   private now(): string {

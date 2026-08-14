@@ -1,5 +1,15 @@
 import { Injectable } from '@angular/core';
-import { Observable, concat, concatMap, from, ignoreElements, map, of, timer } from 'rxjs';
+import {
+  EMPTY,
+  Observable,
+  concat,
+  concatMap,
+  from,
+  ignoreElements,
+  map,
+  throwError,
+  timer,
+} from 'rxjs';
 import { AnswerBlock, AnswerChunk, AskRequest } from '../models/chat.models';
 import { ChatService } from './chat-service';
 
@@ -25,13 +35,16 @@ const BETWEEN_BLOCKS_MS = 90;
 const FAIL_PATTERN = /^fail$/i;
 
 interface CannedReply {
+  /** A suggestion chip is only offered if this matcher recognises it. */
   match: RegExp;
+  suggestion: string;
   blocks: AnswerBlock[];
 }
 
 const REPLIES: CannedReply[] = [
   {
     match: /top|customer|revenue/i,
+    suggestion: 'Show top 5 customers by revenue this quarter',
     blocks: [
       { kind: 'text', text: 'Here are the top 5 customers by revenue for the current quarter:' },
       {
@@ -53,6 +66,7 @@ const REPLIES: CannedReply[] = [
   },
   {
     match: /canada|territory|sales/i,
+    suggestion: 'What were total sales in Canada last month?',
     blocks: [
       { kind: 'text', text: 'Total sales in Canada for last month came to $412,780.' },
       {
@@ -64,6 +78,7 @@ const REPLIES: CannedReply[] = [
   },
   {
     match: /stock|product|bike|inventory/i,
+    suggestion: 'List products with low stock in the Bikes category',
     blocks: [
       { kind: 'text', text: 'Products in Bikes with low stock (25 units or fewer):' },
       {
@@ -94,6 +109,11 @@ function chunkText(text: string): string[] {
   return text.match(/\S+\s*/g) ?? [];
 }
 
+/** Waits, emits nothing. */
+function pause(ms: number): Observable<never> {
+  return timer(ms).pipe(ignoreElements());
+}
+
 function typeOut(text: string): Observable<AnswerChunk> {
   return from(chunkText(text)).pipe(
     concatMap((piece) =>
@@ -110,29 +130,23 @@ function pickReply(question: string): AnswerBlock[] {
 
 @Injectable()
 export class MockChatService implements ChatService {
+  /** Derived from REPLIES, so a chip can never drift out of sync with a matcher. */
+  readonly suggestions: readonly string[] = REPLIES.map((reply) => reply.suggestion);
+
   ask({ question }: AskRequest): Observable<AnswerChunk> {
-    const thinking = timer(THINKING_MIN_MS + Math.random() * THINKING_JITTER_MS).pipe(
-      ignoreElements(),
-    );
+    const body = FAIL_PATTERN.test(question.trim())
+      ? throwError(() => new Error('Simulated backend failure.'))
+      : from(pickReply(question)).pipe(
+          concatMap((block, index) =>
+            concat(
+              index > 0 ? pause(BETWEEN_BLOCKS_MS) : EMPTY,
+              block.kind === 'text'
+                ? typeOut(block.text)
+                : timer(WHOLE_BLOCK_MS).pipe(map((): AnswerChunk => ({ kind: 'block', block }))),
+            ),
+          ),
+        );
 
-    if (FAIL_PATTERN.test(question.trim())) {
-      return concat(
-        thinking,
-        of<AnswerChunk>({ kind: 'error', message: 'Simulated backend failure.' }),
-      );
-    }
-
-    const body = from(pickReply(question)).pipe(
-      concatMap((block, index) => {
-        const gap = index > 0 ? timer(BETWEEN_BLOCKS_MS).pipe(ignoreElements()) : of<AnswerChunk>();
-        const emit =
-          block.kind === 'text'
-            ? typeOut(block.text)
-            : timer(WHOLE_BLOCK_MS).pipe(map((): AnswerChunk => ({ kind: 'block', block })));
-        return concat(gap, emit);
-      }),
-    );
-
-    return concat(thinking, body);
+    return concat(pause(THINKING_MIN_MS + Math.random() * THINKING_JITTER_MS), body);
   }
 }

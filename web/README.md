@@ -1,7 +1,7 @@
 # Web — Angular chat UI
 
 **Owner: unassigned** · Stack: Angular 21, Bootstrap 5.3, TypeScript 5.9,
-Node 22
+Node 22 · Icons are inline SVG, not an icon font
 
 The human interface to the ERP. Someone types *"who were our biggest customers
 last quarter?"* and the answer appears here — no SQL, no schema knowledge, no

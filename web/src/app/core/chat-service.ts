@@ -17,6 +17,14 @@ import { AnswerChunk, AskRequest } from '../models/chat.models';
  */
 export interface ChatService {
   ask(request: AskRequest): Observable<AnswerChunk>;
+
+  /**
+   * Starter prompts for the empty state. They live here, not in the component,
+   * because only the implementation knows what it can actually answer — a
+   * suggestion the backend does not recognise falls through to a generic reply
+   * and makes the chips look broken.
+   */
+  readonly suggestions: readonly string[];
 }
 
 /**

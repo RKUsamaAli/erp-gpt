@@ -16,6 +16,9 @@ import { ChatService } from './chat-service';
  */
 @Injectable()
 export class HttpChatService implements ChatService {
+  /** The real backend will serve these; nothing is offered until it does. */
+  readonly suggestions: readonly string[] = [];
+
   ask(_request: AskRequest): Observable<AnswerChunk> {
     // Once POST /api/chat exists, this becomes roughly:
     //

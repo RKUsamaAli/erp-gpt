@@ -20,37 +20,27 @@
   }
 }
 
-/* Wide tables scroll inside their own box rather than stretching the bubble. */
-.answer-table-wrap {
-  overflow-x: auto;
+/* Width, cell padding, striping and horizontal scrolling all come from
+   Bootstrap (.table .table-sm .table-striped .table-responsive). What is left
+   here is the panel treatment, which is this app's look rather than layout. */
+.answer-table {
   border: 1px solid var(--border);
   border-radius: 10px;
-}
-
-.answer-table {
-  width: 100%;
-  border-collapse: collapse;
   font-size: 0.86rem;
   white-space: nowrap;
 
-  th,
-  td {
-    padding: 0.5rem 0.7rem;
-    text-align: left;
+  /* These must land on the table, not this wrapper: Bootstrap declares them on
+     .table itself, and a declaration always beats an inherited value. */
+  table {
+    --bs-table-bg: transparent; /* sit on the bubble, not the page panel */
+    --bs-table-color: var(--text-primary);
+    --bs-table-striped-bg: rgb(255 255 255 / 4%);
+    --bs-table-striped-color: var(--text-primary);
+    --bs-table-border-color: var(--border-soft);
   }
 
   th {
     background: var(--surface-3);
-    color: var(--text-primary);
-    font-weight: 600;
-  }
-
-  tbody tr + tr td {
-    border-top: 1px solid var(--border-soft);
-  }
-
-  tbody tr:nth-child(even) td {
-    background: rgb(255 255 255 / 2%);
   }
 }
 

@@ -66,8 +66,9 @@ button {
    so overriding --bs-primary here does NOT restyle buttons. Don't reach for
    .btn on the send button — .chat__send already owns that look.
    --------------------------------------------------------------------------- */
-:root,
-[data-bs-theme='dark'] {
+/* `:root` alone: this file loads after bootstrap.min.css, so it wins over both
+   Bootstrap's `:root` and its `[data-bs-theme=dark]` block. */
+:root {
   /* NOT `transparent`. body's own radial-gradient already wins over Reboot's
      `background-color: var(--bs-body-bg)` because this file loads last, so this
      token only ever reaches COMPONENTS (.form-control, .offcanvas, .dropdown-menu,

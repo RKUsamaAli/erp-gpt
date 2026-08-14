@@ -14,9 +14,9 @@
   }
 
   @case ('table') {
-    <!-- Wrapper scrolls on its own so a wide table never scrolls the page. -->
-    <div class="answer-table-wrap">
-      <table class="answer-table">
+    <!-- table-responsive scrolls on its own so a wide table never scrolls the page. -->
+    <div class="answer-table table-responsive">
+      <table class="table table-striped mb-0">
         <thead>
           <tr>
             @for (header of b.headers; track $index) {
