@@ -16,7 +16,7 @@ function uid(): string {
 
 /**
  * localStorage-backed workspace. Deliberately the simplest thing that survives
- * a refresh — the real home for this is the backend (see ChatStore).
+ * a refresh, the real home for this is the backend (see ChatStore).
  */
 @Injectable()
 export class LocalChatStore implements ChatStore {
@@ -26,7 +26,9 @@ export class LocalChatStore implements ChatStore {
     [...this.state().projects].sort((a, b) => a.createdAt - b.createdAt),
   );
   readonly chats = computed(() =>
-    [...this.state().chats].sort((a, b) => b.updatedAt - a.updatedAt),
+    this.state()
+      .chats.filter((chat) => !chat.archivedAt)
+      .sort((a, b) => b.updatedAt - a.updatedAt),
   );
 
   constructor() {
@@ -34,7 +36,7 @@ export class LocalChatStore implements ChatStore {
   }
 
   chat(id: string): Chat | undefined {
-    return this.state().chats.find((c) => c.id === id);
+    return this.state().chats.find((c) => c.id === id && !c.archivedAt);
   }
 
   chatsIn(projectId: string | null): Chat[] {
@@ -51,6 +53,21 @@ export class LocalChatStore implements ChatStore {
     this.updateProject(id, (p) => ({ ...p, name: clean(p.name, name) }));
   }
 
+  removeProject(id: string): void {
+    this.state.update((s) => ({
+      projects: s.projects.filter((p) => p.id !== id),
+      chats: s.chats.filter((c) => c.projectId !== id),
+    }));
+  }
+
+  archiveProject(id: string): void {
+    const archivedAt = Date.now();
+    this.state.update((s) => ({
+      projects: s.projects.filter((p) => p.id !== id),
+      chats: s.chats.map((c) => (c.projectId === id ? { ...c, archivedAt } : c)),
+    }));
+  }
+
   createChat(projectId: string | null = null): Chat {
     const chat: Chat = {
       id: uid(),
@@ -65,6 +82,14 @@ export class LocalChatStore implements ChatStore {
 
   renameChat(id: string, title: string): void {
     this.updateChat(id, (c) => ({ ...c, title: clean(c.title, title) }));
+  }
+
+  removeChat(id: string): void {
+    this.state.update((s) => ({ ...s, chats: s.chats.filter((c) => c.id !== id) }));
+  }
+
+  archiveChat(id: string): void {
+    this.updateChat(id, (c) => ({ ...c, archivedAt: Date.now() }));
   }
 
   setMessages(chatId: string, messages: ChatMessage[]): void {

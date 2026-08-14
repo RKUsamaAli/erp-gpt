@@ -1,12 +1,58 @@
-/* Selectors follow the markup's own structure — header, nav, section, ul, li —
-   so the template stays readable and needs a class only where an element name
-   cannot say which of two things it is (.primary, .ghost, .nested). */
 :host {
   display: flex;
   flex-direction: column;
   height: 100%;
   background: var(--surface-1);
   border-right: 1px solid var(--border-soft);
+
+  &.collapsed {
+    align-items: center;
+
+    header {
+      flex-direction: column;
+      gap: 0.55rem;
+      width: 100%;
+      padding: 0.8rem 0.45rem;
+
+      strong,
+      .collapse-sidebar,
+      .close-sidebar {
+        display: none;
+      }
+    }
+
+    .expand-sidebar {
+      display: flex;
+    }
+
+    nav {
+      width: 100%;
+      padding: 0.6rem 0.45rem;
+
+      .nav-label,
+      button:not(.primary) {
+        display: none;
+      }
+
+      .primary {
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        border-radius: 10px;
+      }
+    }
+
+    .scroller {
+      display: none;
+    }
+  }
+
+  &:not(.collapsed) {
+    .expand-sidebar {
+      display: none;
+    }
+  }
 }
 
 header {
@@ -28,8 +74,32 @@ header {
   }
 
   strong {
+    flex: 1;
     font-size: 0.95rem;
   }
+}
+
+.collapse-sidebar,
+.close-sidebar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--surface-3);
+    color: var(--text-primary);
+  }
+}
+
+.close-sidebar {
+  display: none;
 }
 
 nav {
@@ -63,13 +133,18 @@ nav {
         filter: brightness(1.08);
       }
     }
+
+    svg {
+      flex: 0 0 auto;
+    }
   }
 }
 
 .scroller {
   flex: 1;
+  overflow-x: hidden;
   overflow-y: auto;
-  padding: 0 0.55rem 1rem;
+  padding: 0 0.85rem 1rem 0.55rem;
 }
 
 section {
@@ -92,20 +167,19 @@ section {
   }
 }
 
-/* Row: the item's name grows, its actions sit at the end and appear on hover. */
 .row {
-  display: flex;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 0.15rem;
+  max-width: 100%;
+  margin-right: 0.2rem;
   border-radius: 9px;
 
-  &:hover {
+  &:hover,
+  &:focus-within {
     background: var(--tint);
-  }
-
-  &:hover .ghost,
-  .ghost:focus-visible {
-    opacity: 1;
   }
 }
 
@@ -115,7 +189,10 @@ section {
   align-items: center;
   gap: 0.35rem;
   min-width: 0;
+  width: 100%;
+  max-width: 100%;
   padding: 0.42rem 0.45rem;
+  overflow: hidden;
   border: none;
   border-radius: 9px;
   background: none;
@@ -123,9 +200,8 @@ section {
   font-size: 0.83rem;
   text-align: left;
   text-decoration: none;
-  white-space: nowrap;
-  overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
   cursor: pointer;
 
   &:hover {
@@ -135,6 +211,13 @@ section {
   &.active {
     background: var(--surface-3);
     color: var(--text-primary);
+  }
+
+  .title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   svg {
@@ -152,26 +235,95 @@ section {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  border: none;
+  width: 28px;
+  height: 28px;
+  margin-left: 0.05rem;
+  border: 1px solid transparent;
   border-radius: 7px;
-  background: none;
-  color: var(--text-secondary);
+  background: var(--surface-2);
+  color: #475467;
   cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.12s ease;
 
-  &:hover {
+  &:hover,
+  &[aria-expanded='true'] {
     background: var(--surface-3);
-    color: var(--text-primary);
+    border-color: var(--border-soft);
+    color: #101828;
+  }
+
+  svg {
+    display: block;
+    width: 16px;
+    height: 16px;
+    overflow: visible;
+    color: inherit;
+  }
+
+  path {
+    stroke: currentColor;
+  }
+
+  circle {
+    fill: currentColor;
   }
 }
 
-.project > .nested {
-  margin-left: 0.75rem;
-  padding-left: 0.35rem;
-  border-left: 1px solid var(--border-soft);
+.action-menu {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 4px);
+  right: 0.35rem;
+  min-width: 142px;
+  padding: 0.25rem;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  background: var(--surface-1);
+  box-shadow: 0 12px 30px rgb(15 23 42 / 18%);
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    min-height: 32px;
+    padding: 0.4rem 0.55rem;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--surface-3);
+    }
+
+    &.danger {
+      color: #b42318;
+    }
+
+    svg {
+      flex: 0 0 auto;
+      color: inherit;
+    }
+
+    path {
+      stroke: currentColor;
+    }
+
+    circle {
+      fill: currentColor;
+    }
+  }
+}
+
+.project {
+  > .nested {
+    margin-left: 0.75rem;
+    padding-left: 0.35rem;
+    border-left: 1px solid var(--border-soft);
+  }
 }
 
 .empty {
@@ -179,4 +331,58 @@ section {
   color: var(--text-secondary);
   font-size: 0.76rem;
   opacity: 0.75;
+}
+
+@media (max-width: 767.98px) {
+  :host {
+    &.collapsed {
+      align-items: stretch;
+
+      header {
+        flex-direction: row;
+        gap: 0.6rem;
+        width: auto;
+        padding: 0.9rem 1rem;
+
+        strong,
+        .close-sidebar {
+          display: flex;
+        }
+      }
+
+      .expand-sidebar,
+      .collapse-sidebar {
+        display: none;
+      }
+
+      nav {
+        width: auto;
+        padding: 0.8rem;
+
+        .nav-label,
+        button:not(.primary) {
+          display: flex;
+        }
+
+        .primary {
+          justify-content: flex-start;
+          width: auto;
+          height: auto;
+          padding: 0.5rem 0.7rem;
+        }
+      }
+
+      .scroller {
+        display: block;
+      }
+    }
+  }
+
+  .collapse-sidebar {
+    display: none;
+  }
+
+  .close-sidebar {
+    display: flex;
+  }
 }

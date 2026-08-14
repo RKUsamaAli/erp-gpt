@@ -12,7 +12,7 @@ import { Chat, Project } from '../models/workspace.models';
  */
 export interface ChatStore {
   readonly projects: Signal<Project[]>;
-  /** Most recently updated first. */
+  /** Most recently updated first. Archived chats are hidden. */
   readonly chats: Signal<Chat[]>;
 
   chat(id: string): Chat | undefined;
@@ -20,9 +20,13 @@ export interface ChatStore {
 
   createProject(name?: string): Project;
   renameProject(id: string, name: string): void;
+  removeProject(id: string): void;
+  archiveProject(id: string): void;
 
   createChat(projectId?: string | null): Chat;
   renameChat(id: string, title: string): void;
+  removeChat(id: string): void;
+  archiveChat(id: string): void;
 
   /** Replaces a chat's transcript; also retitles it from the first question. */
   setMessages(chatId: string, messages: ChatMessage[]): void;

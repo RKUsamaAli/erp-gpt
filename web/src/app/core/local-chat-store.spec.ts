@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+﻿import { TestBed } from '@angular/core/testing';
 import { ChatMessage } from '../models/chat.models';
 import { UNTITLED_CHAT } from '../models/workspace.models';
 import { LocalChatStore } from './local-chat-store';
@@ -60,6 +60,28 @@ describe('LocalChatStore', () => {
 
     expect(store.chats()[0].id).toBe(first.id);
     expect(store.chats()[1].id).toBe(second.id);
+  });
+
+  it('hides archived chats from active lists', () => {
+    const kept = store.createChat();
+    const archived = store.createChat();
+
+    store.archiveChat(archived.id);
+
+    expect(store.chat(archived.id)).toBeUndefined();
+    expect(store.chats().map((chat) => chat.id)).toEqual([kept.id]);
+  });
+
+  it('removes a project and its chats', () => {
+    const project = store.createProject('Ops');
+    const nested = store.createChat(project.id);
+    const loose = store.createChat();
+
+    store.removeProject(project.id);
+
+    expect(store.projects()).toEqual([]);
+    expect(store.chat(nested.id)).toBeUndefined();
+    expect(store.chats().map((chat) => chat.id)).toEqual([loose.id]);
   });
 
   it('survives a reload', () => {

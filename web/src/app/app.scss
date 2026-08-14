@@ -1,11 +1,17 @@
 :host {
   display: grid;
-  grid-template-columns: 268px 1fr;
+  grid-template-columns: 268px minmax(0, 1fr);
   height: 100%;
+  transition: grid-template-columns 0.18s ease;
+
+  &.sidebar-collapsed {
+    grid-template-columns: 56px minmax(0, 1fr);
+  }
 }
 
 app-sidebar {
   min-height: 0;
+  overflow: hidden;
 }
 
 main {
@@ -18,11 +24,13 @@ main {
   display: none;
 }
 
-/* Below md the sidebar becomes a drawer over the chat. No Bootstrap JS needed:
-   one class, one transform. */
 @media (max-width: 767.98px) {
   :host {
     grid-template-columns: 1fr;
+
+    &.sidebar-collapsed {
+      grid-template-columns: 1fr;
+    }
   }
 
   app-sidebar {

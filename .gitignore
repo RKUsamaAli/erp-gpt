@@ -28,3 +28,6 @@ agent/logs/
 *.env
 .env*
 secrets.json
+
+# Local planning notes
+web/docs/web-plan.md

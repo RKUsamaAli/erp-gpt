@@ -1,13 +1,13 @@
 import { Injectable, signal } from '@angular/core';
 
 /**
- * Whether the sidebar is showing on narrow screens. It lives here rather than
- * in the shell because the button that opens it sits in the chat header, and a
- * shared signal is lighter than threading an output up through the tree.
+ * Shared layout state. The mobile drawer is controlled from the chat header;
+ * desktop collapse is controlled from the sidebar/app shell.
  */
 @Injectable({ providedIn: 'root' })
 export class LayoutService {
   readonly sidebarOpen = signal(false);
+  readonly sidebarCollapsed = signal(false);
 
   toggleSidebar(): void {
     this.sidebarOpen.update((open) => !open);
@@ -15,5 +15,14 @@ export class LayoutService {
 
   closeSidebar(): void {
     this.sidebarOpen.set(false);
+  }
+
+  collapseSidebar(): void {
+    this.sidebarCollapsed.set(true);
+    this.closeSidebar();
+  }
+
+  expandSidebar(): void {
+    this.sidebarCollapsed.set(false);
   }
 }

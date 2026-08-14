@@ -10,16 +10,27 @@
     </svg>
   </span>
   <strong>ERP GPT</strong>
+  <button type="button" class="expand-sidebar" (click)="expandSidebar()" aria-label="Expand sidebar" title="Expand sidebar">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
+      <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </button>
+  <button type="button" class="collapse-sidebar" (click)="collapseSidebar()" aria-label="Collapse sidebar" title="Collapse sidebar">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
+      <path d="M15 6 9 12l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </button>
+  <button type="button" class="close-sidebar" (click)="closeSidebar()" aria-label="Close sidebar" title="Close sidebar">
+    <ng-container *ngTemplateOutlet="xIcon" />
+  </button>
 </header>
 
 <nav aria-label="Create">
-  <button type="button" class="primary" (click)="newChat()">
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
-      <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-    </svg>
-    New chat
+  <button type="button" class="primary" (click)="newChat()" aria-label="New chat" title="New chat">
+    <ng-container *ngTemplateOutlet="composeIcon" />
+    <span class="nav-label">New chat</span>
   </button>
-  <button type="button" (click)="newProject()">
+  <button type="button" (click)="newProject()" aria-label="New project" title="New project">
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
       <path
         d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"
@@ -28,7 +39,7 @@
         stroke-linejoin="round"
       />
     </svg>
-    New project
+    <span class="nav-label">New project</span>
   </button>
 </nav>
 
@@ -70,7 +81,7 @@
                       stroke-linejoin="round"
                     />
                   </svg>
-                  {{ project.name }}
+                  <span class="title">{{ project.name }}</span>
                 </button>
                 <button
                   type="button"
@@ -79,24 +90,35 @@
                   aria-label="New chat in project"
                   title="New chat in project"
                 >
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true">
-                    <path
-                      d="M12 5v14M5 12h14"
-                      stroke="currentColor"
-                      stroke-width="1.8"
-                      stroke-linecap="round"
-                    />
-                  </svg>
+                  <ng-container *ngTemplateOutlet="composeIcon" />
                 </button>
                 <button
                   type="button"
                   class="ghost"
-                  (click)="startEditing('project', project.id)"
-                  aria-label="Rename project"
-                  title="Rename project"
+                  (click)="toggleMenu('project', project.id)"
+                  [attr.aria-expanded]="isMenuOpen('project', project.id)"
+                  aria-label="Project options"
+                  title="Project options"
                 >
-                  <ng-container *ngTemplateOutlet="pencil" />
+                  <ng-container *ngTemplateOutlet="moreIcon" />
                 </button>
+
+                @if (isMenuOpen('project', project.id)) {
+                  <div class="action-menu" role="menu">
+                    <button type="button" role="menuitem" (click)="startEditing('project', project.id)">
+                      <ng-container *ngTemplateOutlet="pencilIcon" />
+                      Rename
+                    </button>
+                    <button type="button" role="menuitem" (click)="archiveProject(project)">
+                      <ng-container *ngTemplateOutlet="archiveIcon" />
+                      Archive
+                    </button>
+                    <button type="button" role="menuitem" class="danger" (click)="removeProject(project)">
+                      <ng-container *ngTemplateOutlet="trashIcon" />
+                      Remove
+                    </button>
+                  </div>
+                }
               </div>
             }
 
@@ -104,9 +126,7 @@
               <ul class="nested">
                 @for (chat of chatsIn(project); track chat.id) {
                   <li>
-                    <ng-container
-                      *ngTemplateOutlet="chatRow; context: { $implicit: chat }"
-                    />
+                    <ng-container *ngTemplateOutlet="chatRow; context: { $implicit: chat }" />
                   </li>
                 } @empty {
                   <li class="empty">No chats yet</li>
@@ -144,21 +164,56 @@
     />
   } @else {
     <div class="row">
-      <a class="name" [routerLink]="['/chat', chat.id]" routerLinkActive="active">{{ chat.title }}</a>
+      <a class="name" [routerLink]="['/chat', chat.id]" routerLinkActive="active" (click)="closeSidebar()">
+        <span class="title">{{ chat.title }}</span>
+      </a>
       <button
         type="button"
         class="ghost"
-        (click)="startEditing('chat', chat.id)"
-        aria-label="Rename chat"
-        title="Rename chat"
+        (click)="toggleMenu('chat', chat.id)"
+        [attr.aria-expanded]="isMenuOpen('chat', chat.id)"
+        aria-label="Chat options"
+        title="Chat options"
       >
-        <ng-container *ngTemplateOutlet="pencil" />
+        <ng-container *ngTemplateOutlet="moreIcon" />
       </button>
+
+      @if (isMenuOpen('chat', chat.id)) {
+        <div class="action-menu" role="menu">
+          <button type="button" role="menuitem" (click)="startEditing('chat', chat.id)">
+            <ng-container *ngTemplateOutlet="pencilIcon" />
+            Rename
+          </button>
+          <button type="button" role="menuitem" (click)="archiveChat(chat)">
+            <ng-container *ngTemplateOutlet="archiveIcon" />
+            Archive
+          </button>
+          <button type="button" role="menuitem" class="danger" (click)="removeChat(chat)">
+            <ng-container *ngTemplateOutlet="trashIcon" />
+            Remove
+          </button>
+        </div>
+      }
     </div>
   }
 </ng-template>
 
-<ng-template #pencil>
+<ng-template #composeIcon>
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
+    <path d="M12 5H6.5A1.5 1.5 0 0 0 5 6.5v11A1.5 1.5 0 0 0 6.5 19h11A1.5 1.5 0 0 0 19 17.5V12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M14 4h6v6M13 11l7-7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+  </svg>
+</ng-template>
+
+<ng-template #moreIcon>
+  <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+    <circle cx="12" cy="5" r="1.7" />
+    <circle cx="12" cy="12" r="1.7" />
+    <circle cx="12" cy="19" r="1.7" />
+  </svg>
+</ng-template>
+
+<ng-template #pencilIcon>
   <svg viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true">
     <path
       d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3Z"
@@ -166,5 +221,24 @@
       stroke-width="1.6"
       stroke-linejoin="round"
     />
+  </svg>
+</ng-template>
+
+<ng-template #archiveIcon>
+  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true">
+    <path d="M4 7h16M6 7v12h12V7M9 11h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M7 4h10l1 3H6l1-3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+  </svg>
+</ng-template>
+
+<ng-template #trashIcon>
+  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true">
+    <path d="M5 7h14M10 11v6M14 11v6M8 7l1-3h6l1 3M7 7l1 13h8l1-13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+  </svg>
+</ng-template>
+
+<ng-template #xIcon>
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
+    <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
   </svg>
 </ng-template>
