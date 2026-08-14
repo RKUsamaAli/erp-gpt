@@ -12,7 +12,7 @@
         </svg>
       </span>
       <div class="chat__brand-text">
-        <span class="chat__brand-title">GraphQL Assistant</span>
+        <span class="chat__brand-title">ERP GPT</span>
         <span class="chat__brand-subtitle">
           <span class="chat__status-dot" [class.chat__status-dot--busy]="isLoading()"></span>
           {{ isLoading() ? 'Thinking…' : 'Online' }}
@@ -25,9 +25,10 @@
     @if (messages().length === 0) {
       <div class="chat__empty">
         <div class="chat__empty-icon">✦</div>
-        <div class="chat__empty-title">How can I help today?</div>
+        <div class="chat__empty-title">Ask your ERP anything</div>
         <p class="chat__empty-subtitle">
-          Ask a question and it will be sent to a GraphQL API — the answer appears right here.
+          Sales, customers, inventory, territories — ask in plain language and the answer
+          appears right here.
         </p>
         <div class="chat__suggestions">
           @for (suggestion of suggestions; track suggestion) {
@@ -69,14 +70,22 @@
           }
         </div>
         <div class="message__col">
-          <div class="message__bubble">{{ message.text }}</div>
+          <div class="message__bubble">
+            @if (message.role === 'user') {
+              <span class="message__text">{{ plain(message.blocks) }}</span>
+            } @else {
+              @for (block of message.blocks; track $index) {
+                <app-answer-block [block]="block" />
+              }
+            }
+          </div>
           <div class="message__meta">
             <span class="message__time">{{ message.time }}</span>
             @if (message.role === 'assistant' && !message.isError) {
               <button
                 type="button"
                 class="message__copy"
-                (click)="copyMessage(message.text, $index)"
+                (click)="copyMessage(message.blocks, $index)"
                 aria-label="Copy response"
               >
                 {{ copiedIndex() === $index ? 'Copied' : 'Copy' }}
@@ -87,7 +96,7 @@
       </div>
     }
 
-    @if (isLoading()) {
+    @if (showTyping()) {
       <div class="message message--assistant">
         <div class="message__avatar message__avatar--pulse">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
@@ -115,22 +124,31 @@
         #promptEl
         class="chat__textarea"
         rows="1"
-        placeholder="Message GraphQL Assistant…"
+        placeholder="Ask your ERP anything…"
         [ngModel]="prompt()"
         name="prompt"
         (ngModelChange)="onInput($event)"
         (keydown)="onKeydown($event)"
         [disabled]="isLoading()"
       ></textarea>
-      <button
-        type="submit"
-        class="chat__send"
-        [disabled]="isLoading() || !prompt().trim()"
-        aria-label="Send message"
-      >
-        @if (isLoading()) {
-          <span class="spinner"></span>
-        } @else {
+      @if (isLoading()) {
+        <button
+          type="button"
+          class="chat__send chat__send--stop"
+          (click)="stop()"
+          aria-label="Stop generating"
+        >
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor" />
+          </svg>
+        </button>
+      } @else {
+        <button
+          type="submit"
+          class="chat__send"
+          [disabled]="!prompt().trim()"
+          aria-label="Send message"
+        >
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
             <path
               d="M4 12L20 4L14 20L11 13L4 12Z"
@@ -140,8 +158,8 @@
               stroke-linecap="round"
             />
           </svg>
-        }
-      </button>
+        </button>
+      }
     </div>
     <div class="chat__hint">Press Enter to send · Shift+Enter for a new line</div>
   </form>

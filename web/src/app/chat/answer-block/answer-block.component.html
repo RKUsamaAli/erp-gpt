@@ -1,0 +1,43 @@
+@let b = block();
+
+@switch (b.kind) {
+  @case ('text') {
+    <p class="answer-text">{{ b.text }}</p>
+  }
+
+  @case ('list') {
+    <ul class="answer-list">
+      @for (item of b.items; track $index) {
+        <li>{{ item }}</li>
+      }
+    </ul>
+  }
+
+  @case ('table') {
+    <!-- Wrapper scrolls on its own so a wide table never scrolls the page. -->
+    <div class="answer-table-wrap">
+      <table class="answer-table">
+        <thead>
+          <tr>
+            @for (header of b.headers; track $index) {
+              <th scope="col">{{ header }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of b.rows; track $index) {
+            <tr>
+              @for (cell of row; track $index) {
+                <td>{{ cell }}</td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @case ('code') {
+    <pre class="answer-code"><code>{{ b.source }}</code></pre>
+  }
+}

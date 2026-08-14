@@ -1,0 +1,65 @@
+:host {
+  display: block;
+}
+
+:host + :host {
+  margin-top: 0.75rem;
+}
+
+.answer-text {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.answer-list {
+  margin: 0;
+  padding-left: 1.15rem;
+
+  li + li {
+    margin-top: 0.3rem;
+  }
+}
+
+/* Wide tables scroll inside their own box rather than stretching the bubble. */
+.answer-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.answer-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  white-space: nowrap;
+
+  th,
+  td {
+    padding: 0.5rem 0.7rem;
+    text-align: left;
+  }
+
+  th {
+    background: var(--surface-3);
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  tbody tr + tr td {
+    border-top: 1px solid var(--border-soft);
+  }
+
+  tbody tr:nth-child(even) td {
+    background: rgb(255 255 255 / 2%);
+  }
+}
+
+.answer-code {
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  overflow-x: auto;
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.84rem;
+}

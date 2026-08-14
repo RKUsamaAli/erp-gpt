@@ -6,6 +6,32 @@ language; the answer comes back from live data.
 Originally generated with [Angular CLI](https://github.com/angular/angular-cli)
 20.2.0; now on Angular 21.2.x. Implementation plan: [`doc/web-plan.md`](doc/web-plan.md).
 
+## How answers get here
+
+The UI never composes a query. It asks a `ChatService` and renders whatever
+structured blocks come back — only the API knows about data
+([`docs/architecture.md`](../docs/architecture.md)).
+
+```
+ChatComponent → CHAT_SERVICE ─┬─ MockChatService   canned ERP answers (today)
+                              └─ HttpChatService   throws until the Phase 4
+                                                   agent exists (agent/README.md)
+```
+
+Swapping implementations is one line in [`src/app/app.config.ts`](src/app/app.config.ts).
+Answers are typed `AnswerBlock`s (text · list · table · code), not HTML strings,
+so nothing needs a sanitizer bypass.
+
+Try `fail` as a question to exercise the error path.
+
+### Guard rail
+
+This must print nothing — it is the check that the rule above still holds:
+
+```bash
+grep -rniE "graphql|bypassSecurityTrustHtml|innerHTML|example\.com" src/ | grep -vE ':[0-9]+:\s*(\*|//|/\*)'
+```
+
 ## Development server
 
 To start a local development server, run:
