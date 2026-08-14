@@ -69,13 +69,23 @@ Full architecture notes: [`docs/architecture.md`](docs/architecture.md)
 
 ---
 
-## Demo UI
+## Chat UI
 
-Interactive ChatGPT-style demo of the ERP GPT chat and execution flow:
+The real app: [`web/`](web/) — Angular 21 + Bootstrap 5. Answers are mocked
+behind a one-line-swappable seam until the Phase 4 agent exists.
 
-- Folder: [`demo/`](demo/)
+```bash
+cd web && npm install && npm start     # http://localhost:4200
+```
+
+The static mockup in [`demo/`](demo/) is what `web/` was built from, and stays
+as the public link until `web/` is deployed:
+
 - Live page (GitHub Pages): https://hammadrehmanawan.github.io/erp-gpt/
 - Instant preview: [open HTML preview](https://htmlpreview.github.io/?https://github.com/HammadRehmanAwan/erp-gpt/blob/feature/demo_html/demo/index.html)
+
+`demo/execution-flow.html` has no replacement in `web/` and must be carried
+across at cutover — see [`web/doc/web-plan.md`](web/doc/web-plan.md).
 
 ---
 
@@ -89,6 +99,7 @@ Interactive ChatGPT-style demo of the ERP GPT chat and execution flow:
 | `embeddings/` | Ingestion script: KB → vector DB | Zahid, Kashif |
 | `eval/` | 50 test questions + scoring script | Hammad |
 | `agent/` | Retrieval, prompt assembly, validation gate | Phase 4 |
+| `web/` | Angular 21 + Bootstrap 5 chat UI — answers mocked until `agent/` exists | **unassigned** |
 | `training/` | Empty on purpose — see its README | Phase 5, gated |
 
 ---
@@ -112,15 +123,24 @@ lives in LoRA; data lives only behind the API.
 ## Getting started
 
 ```bash
-# API (once api/ is scaffolded)
-cd api && dotnet run
+# Database (Docker) — see SETUP.md for the one-time dataset load
+cd api && docker compose up -d
+
+# API — http://localhost:5000/graphql
+dotnet run --project api/ErpGpt.GraphQLApi
+
+# Chat UI — http://localhost:4200
+cd web && npm install && npm start
 
 # KB ingestion (once embeddings/ is built)
 cd embeddings && python ingest.py
 
-# Retrieval eval
+# Retrieval eval (once the vector DB is populated)
 cd eval && python score_retrieval.py
 ```
+
+`api/ErpGpt.Api` is an earlier prototype that seeds synthetic data into the
+same database — run `ErpGpt.GraphQLApi`, not that one.
 
 ## Contributing rules
 
@@ -128,3 +148,5 @@ cd eval && python score_retrieval.py
 2. Aggregations live in C#, never composed by the model.
 3. Every endpoint declares auth and a `limit` ceiling from day one.
 4. Nothing in `kb/` may contain business data — endpoint documentation only.
+5. `web/` never composes a query. It asks a `ChatService` and renders the
+   structured blocks it gets back — no GraphQL in the browser, no raw HTML.

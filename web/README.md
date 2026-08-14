@@ -1,89 +1,95 @@
-# ERP GPT — web
+# Web — Angular chat UI
 
-Angular chat UI for [erp-gpt](../README.md). Ask the ERP a question in plain
-language; the answer comes back from live data.
+**Owner: unassigned** · Stack: Angular 21, Bootstrap 5.3, TypeScript 5.9,
+Node 22
 
-Originally generated with [Angular CLI](https://github.com/angular/angular-cli)
-20.2.0; now on Angular 21.2.x. Implementation plan: [`doc/web-plan.md`](doc/web-plan.md).
+The human interface to the ERP. Someone types *"who were our biggest customers
+last quarter?"* and the answer appears here — no SQL, no schema knowledge, no
+clicking through screens.
 
-## How answers get here
+Replaces [`demo/`](../demo/) once it is deployed. Until then `demo/` stays as
+the public GitHub Pages link; see the cutover section of
+[`doc/web-plan.md`](doc/web-plan.md).
 
-The UI never composes a query. It asks a `ChatService` and renders whatever
-structured blocks come back — only the API knows about data
+## The one rule
+
+**This app never composes a query.** It hands a question to a `ChatService` and
+renders whatever structured blocks come back. Turning a question into an API
+call is the agent's job, and only the API knows about data
 ([`docs/architecture.md`](../docs/architecture.md)).
 
 ```
 ChatComponent → CHAT_SERVICE ─┬─ MockChatService   canned ERP answers (today)
                               └─ HttpChatService   throws until the Phase 4
-                                                   agent exists (agent/README.md)
+                                                   agent exists (../agent/)
 ```
 
 Swapping implementations is one line in [`src/app/app.config.ts`](src/app/app.config.ts).
-Answers are typed `AnswerBlock`s (text · list · table · code), not HTML strings,
-so nothing needs a sanitizer bypass.
 
-Try `fail` as a question to exercise the error path.
+Two corollaries, both load-bearing:
 
-### Guard rail
+1. **Answers are data, not markup.** `AnswerBlock` is a typed union — text,
+   list, table, code — rendered through ordinary interpolation. Model output is
+   untrusted until it passes the validation gate, so there is no
+   `bypassSecurityTrustHtml` anywhere and there must never be one.
+2. **Bootstrap carries layout, not identity.** Grid, utilities, offcanvas and
+   form controls come from Bootstrap; bubbles, avatars, gradients and the
+   streaming cursor stay in component SCSS. Don't express a message bubble as a
+   stack of utility classes.
 
-This must print nothing — it is the check that the rule above still holds:
+## Run it
+
+```bash
+npm install
+npm start          # http://localhost:4200
+```
+
+Node must be 20.19+, 22.12+ or 24+. `engines` in `package.json` fails the
+install otherwise, rather than letting it surface as a confusing build error
+later. If `ng` reports "not recognised" after switching Node versions, that is
+nvm — global packages are installed per Node version.
+
+| Do | Command |
+|---|---|
+| Dev server | `npm start` |
+| Production build | `npm run build` → `dist/chat-app/browser` |
+| Unit tests | `npm test` |
+| Guard rail (below) | see next section |
+
+The build output folder is `chat-app`, the **Angular project** name — not
+`web`, the folder name. Anything pointing at the build (the Pages workflow)
+must use `web/dist/chat-app/browser`.
+
+## Guard rail
+
+This must print nothing. It is the check that the one rule above still holds,
+and it failed before the seam existed:
 
 ```bash
 grep -rniE "graphql|bypassSecurityTrustHtml|innerHTML|example\.com" src/ | grep -vE ':[0-9]+:\s*(\*|//|/\*)'
 ```
 
-## Development server
+## Layout
 
-To start a local development server, run:
-
-```bash
-ng serve
+```
+src/app/
+├── core/                    the seam
+│   ├── chat-service.ts        interface + CHAT_SERVICE token
+│   ├── mock-chat-service.ts   canned answers, two-speed streaming
+│   └── http-chat-service.ts   stub, no providedIn — stays tree-shaken
+├── models/chat.models.ts    AnswerBlock · AnswerChunk · ChatMessage
+└── chat/
+    ├── chat.component.*     thread, composer, streaming state
+    └── answer-block/        renders one AnswerBlock
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Type `fail` as a question to exercise the error path — nothing else throws
+now that the mock is the only implementation.
 
-## Code scaffolding
+## Not built yet
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Sidebar and thread list · conversation memory and follow-ups · responsive
+breakpoints below `md` · zoneless change detection (deferred: the scroll logic
+is being rewritten anyway) · auth · markdown · charts.
 
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Full plan and open questions: [`doc/web-plan.md`](doc/web-plan.md).
