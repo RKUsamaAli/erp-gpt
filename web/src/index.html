@@ -1,13 +1,21 @@
 <!doctype html>
-<!-- data-bs-theme="dark" activates Bootstrap 5.3's dark token set. Without it,
-     Bootstrap components render light on this dark page. -->
-<html lang="en" data-bs-theme="dark">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <title>ERP GPT</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <script>
+    // Resolve the theme BEFORE first paint. Angular has not booted yet, so
+    // without this a light-theme user sees a dark flash on every load.
+    // Mirrors ThemeService (core/theme.service.ts) — keep the key in step.
+    (function () {
+      var stored = localStorage.getItem('erp-gpt.theme');
+      var theme = stored || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-bs-theme', theme);
+    })();
+  </script>
 </head>
 <body>
   <app-root></app-root>

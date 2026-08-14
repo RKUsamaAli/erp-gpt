@@ -1,5 +1,14 @@
-/* Global theme */
-:root {
+/* ---------------------------------------------------------------------------
+   Theme tokens
+   ---------------------------------------------------------------------------
+   Every colour in the app resolves through these. Components never hardcode a
+   colour, so adding a theme means redefining this block and nothing else.
+
+   ThemeService writes data-bs-theme onto <html>, which switches BOTH this
+   palette and Bootstrap 5.3's own — one attribute, one source of truth.
+   --------------------------------------------------------------------------- */
+:root,
+[data-bs-theme='dark'] {
   --surface-0: #0b0c0e;
   --surface-1: #141518;
   --surface-2: #1c1e22;
@@ -13,7 +22,30 @@
   --accent-soft: #4f7fff;
   --danger: #ff6b6b;
   --success: #3ecf8e;
-  --shadow-color: rgba(0, 0, 0, 0.45);
+  --shadow-color: rgb(0 0 0 / 45%);
+  /* Tint laid over a surface — striped rows, hover states. Light in dark mode,
+     dark in light mode, which is why it cannot be a literal in a component. */
+  --tint: rgb(255 255 255 / 4%);
+  --page-glow: #171a22;
+}
+
+[data-bs-theme='light'] {
+  --surface-0: #f6f7f9;
+  --surface-1: #ffffff;
+  --surface-2: #f2f3f6;
+  --surface-3: #e6e8ee;
+  --border: #d8dbe3;
+  --border-soft: #e8eaf0;
+  --text-primary: #1a1c21;
+  --text-secondary: #5f6470;
+  --accent: #4361ee;
+  --accent-2: #7048e8;
+  --accent-soft: #3b5bdb;
+  --danger: #d64545;
+  --success: #2b9367;
+  --shadow-color: rgb(16 24 40 / 12%);
+  --tint: rgb(16 24 40 / 4%);
+  --page-glow: #e9ecf5;
 }
 
 /* `* { box-sizing: border-box }` used to live here. Bootstrap's Reboot sets
@@ -26,7 +58,8 @@ body {
 }
 
 body {
-  background: radial-gradient(circle at 20% 0%, #171a22 0%, var(--surface-0) 45%),
+  background:
+    radial-gradient(circle at 20% 0%, var(--page-glow) 0%, var(--surface-0) 45%),
     var(--surface-0);
   color: var(--text-primary);
   /* No 'Inter' here: it was requested but never loaded (no font link, no
@@ -54,26 +87,23 @@ button {
 /* ---------------------------------------------------------------------------
    Bootstrap bridge
    ---------------------------------------------------------------------------
-   `data-bs-theme="dark"` (index.html) gives us Bootstrap's GENERIC dark palette
-   (--bs-body-bg: #212529). These overrides point Bootstrap's tokens at this
-   app's palette instead, so Bootstrap chrome matches the chat rather than
-   sitting beside it.
+   data-bs-theme gives us Bootstrap's GENERIC palette. These overrides point its
+   tokens at the app's instead, so Bootstrap chrome matches the chat rather than
+   sitting beside it. Because they reference the same variables, they follow the
+   theme automatically — no per-theme copy needed.
 
-   Load order matters and is set in angular.json: bootstrap.min.css comes FIRST,
-   this file LAST. Both set `body` at the same specificity, so the later one wins.
+   Load order is set in angular.json: bootstrap.min.css FIRST, this file LAST.
+   Both set `body` at equal specificity, so the later one wins.
 
    Caveat: .btn-* colours are compiled from Sass at build time into --bs-btn-*,
    so overriding --bs-primary here does NOT restyle buttons. Don't reach for
-   .btn on the send button — .chat__send already owns that look.
+   .btn where a component already owns its look.
    --------------------------------------------------------------------------- */
-/* `:root` alone: this file loads after bootstrap.min.css, so it wins over both
-   Bootstrap's `:root` and its `[data-bs-theme=dark]` block. */
 :root {
-  /* NOT `transparent`. body's own radial-gradient already wins over Reboot's
+  /* NOT `transparent`. body's own gradient already wins over Reboot's
      `background-color: var(--bs-body-bg)` because this file loads last, so this
      token only ever reaches COMPONENTS (.form-control, .offcanvas, .dropdown-menu,
-     .modal). Transparent there means a see-through sidebar. Give them a solid
-     panel surface instead. */
+     .modal). Transparent there means a see-through sidebar. */
   --bs-body-bg: var(--surface-1);
   --bs-body-color: var(--text-primary);
   --bs-emphasis-color: var(--text-primary);

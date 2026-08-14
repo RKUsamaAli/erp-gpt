@@ -9,6 +9,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "postbuild": "node -e \"const f=require('fs'),d='dist/chat-app/browser';f.copyFileSync(d+'/index.html',d+'/404.html')\"",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
@@ -31,6 +32,7 @@
     "@angular/core": "^21.2.20",
     "@angular/forms": "^21.2.20",
     "@angular/platform-browser": "^21.2.20",
+    "@angular/router": "^21.2.20",
     "bootstrap": "^5.3.8",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",

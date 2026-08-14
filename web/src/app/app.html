@@ -1,1 +1,11 @@
-<app-chat></app-chat>
+<app-sidebar [class.open]="sidebarOpen()" />
+
+<!-- Tapping outside the drawer closes it. Hidden from assistive tech: the same
+     action is reachable from the header button. -->
+@if (sidebarOpen()) {
+  <button type="button" class="scrim" (click)="closeSidebar()" aria-hidden="true" tabindex="-1"></button>
+}
+
+<main>
+  <router-outlet />
+</main>

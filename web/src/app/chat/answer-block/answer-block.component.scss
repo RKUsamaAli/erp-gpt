@@ -34,7 +34,7 @@
   table {
     --bs-table-bg: transparent; /* sit on the bubble, not the page panel */
     --bs-table-color: var(--text-primary);
-    --bs-table-striped-bg: rgb(255 255 255 / 4%);
+    --bs-table-striped-bg: var(--tint);
     --bs-table-striped-color: var(--text-primary);
     --bs-table-border-color: var(--border-soft);
   }

@@ -1,11 +1,15 @@
 :host {
-  display: block;
+  display: flex;
+  flex: 1;
+  min-width: 0;
   height: 100%;
 }
 
 .chat {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-width: 0;
   height: 100%;
   max-width: 860px;
   margin: 0 auto;
@@ -16,31 +20,40 @@
 
 .chat__header {
   flex: 0 0 auto;
-  padding: 0.9rem 1.5rem;
-  border-bottom: 1px solid var(--border);
-  background: linear-gradient(180deg, var(--surface-1), var(--surface-0));
-  backdrop-filter: blur(6px);
-}
-
-.chat__brand {
   display: flex;
   align-items: center;
   gap: 0.7rem;
+  padding: 0.9rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--surface-1), var(--surface-0));
+  backdrop-filter: blur(6px);
+
+  /* The toggle sits hard right; the title takes the space between. */
+  app-theme-toggle {
+    margin-left: auto;
+  }
 }
 
-.chat__brand-icon {
-  display: flex;
+/* Drawer control — only meaningful once the sidebar is off-canvas. */
+.chat__menu {
+  display: none;
   align-items: center;
   justify-content: center;
   width: 34px;
   height: 34px;
+  border: 1px solid var(--border);
   border-radius: 10px;
-  color: #fff;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--accent) 60%, transparent);
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  @media (max-width: 767.98px) {
+    display: flex;
+  }
 }
 
 .chat__brand-text {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   line-height: 1.25;
@@ -51,6 +64,10 @@
   font-size: 0.98rem;
   color: var(--text-primary);
   letter-spacing: 0.01em;
+  /* Titles come from the first question, so they can be long. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .chat__brand-subtitle {

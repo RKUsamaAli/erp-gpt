@@ -22,9 +22,19 @@ call is the agent's job, and only the API knows about data
 ChatComponent → CHAT_SERVICE ─┬─ MockChatService   canned ERP answers (today)
                               └─ HttpChatService   throws until the Phase 4
                                                    agent exists (../agent/)
+
+SidebarComponent → CHAT_STORE ─┬─ LocalChatStore   localStorage (today)
+                               └─ ApiChatStore     when ChatThread / ChatTurn
+                                                   land (../agent/README.md)
 ```
 
-Swapping implementations is one line in [`src/app/app.config.ts`](src/app/app.config.ts).
+Swapping either implementation is one line in
+[`src/app/app.config.ts`](src/app/app.config.ts).
+
+> **Projects and chats are defined client-side for now.** `agent/README.md`
+> plans `ChatThread` / `ChatTurn` entities server-side (roadmap steps 9–12).
+> These are the same idea, so the two shapes will need reconciling — which is
+> why nothing reaches storage except through `CHAT_STORE`.
 
 Two corollaries, both load-bearing:
 
@@ -73,23 +83,54 @@ grep -rniE "graphql|bypassSecurityTrustHtml|innerHTML|example\.com" src/ | grep 
 
 ```
 src/app/
-├── core/                    the seam
-│   ├── chat-service.ts        interface + CHAT_SERVICE token
-│   ├── mock-chat-service.ts   canned answers, two-speed streaming
-│   └── http-chat-service.ts   stub, no providedIn — stays tree-shaken
-├── models/chat.models.ts    AnswerBlock · AnswerChunk · ChatMessage
+├── core/                      the seams and app-wide services
+│   ├── chat-service.ts          interface + CHAT_SERVICE token
+│   ├── mock-chat-service.ts     canned answers, two-speed streaming
+│   ├── http-chat-service.ts     stub, no providedIn — stays tree-shaken
+│   ├── chat-store.ts            interface + CHAT_STORE token
+│   ├── local-chat-store.ts      projects/chats in localStorage
+│   ├── theme.service.ts         writes data-bs-theme onto <html>
+│   └── layout.service.ts        sidebar drawer state
+├── models/
+│   ├── chat.models.ts         AnswerBlock · AnswerChunk · appendChunk
+│   └── workspace.models.ts    Project · Chat
+├── shell/
+│   ├── sidebar/               projects, chats, new/rename
+│   └── rename-field/          inline rename, shared by both
 └── chat/
-    ├── chat.component.*     thread, composer, streaming state
-    └── answer-block/        renders one AnswerBlock
+    ├── chat.component.*       thread, composer, streaming state
+    ├── answer-block/          renders one AnswerBlock
+    └── theme-toggle/          light/dark switch
 ```
+
+## Theming
+
+`data-bs-theme` on `<html>` drives **both** this app's tokens (`src/styles.scss`)
+and Bootstrap 5.3's own — one attribute, one source of truth. Components never
+hardcode a colour, so adding a theme means redefining that token block and
+nothing else.
+
+The choice follows the operating system until the toggle is used, then sticks.
+An inline script in `index.html` resolves it before first paint; without that,
+a light-theme user gets a dark flash on every load.
+
+## Routing
+
+A chat is the only addressable thing — `/chat/:chatId`. A chat's project is a
+property of the chat, so the URL does not repeat it (`/project/x/chat/y` would
+permit states where `y` is not in `x`). `/` resolves to the most recent chat, or
+creates one.
+
+`npm run build` copies `index.html` to `404.html` so deep links survive a
+refresh on GitHub Pages, which has no SPA rewrite.
 
 Type `fail` as a question to exercise the error path — nothing else throws
 now that the mock is the only implementation.
 
 ## Not built yet
 
-Sidebar and thread list · conversation memory and follow-ups · responsive
-breakpoints below `md` · zoneless change detection (deferred: the scroll logic
-is being rewritten anyway) · auth · markdown · charts.
+Conversation memory and follow-ups · deleting projects and chats · moving a
+chat between projects · search · zoneless change detection (deferred: the
+scroll logic is being rewritten anyway) · auth · markdown · charts.
 
 Full plan and open questions: [`docs/web-plan.md`](docs/web-plan.md).

@@ -5,20 +5,27 @@ import {
   ElementRef,
   ViewChild,
   computed,
+  effect,
   inject,
+  input,
   signal,
+  untracked,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Subscription, finalize } from 'rxjs';
 import { CHAT_SERVICE } from '../core/chat-service';
+import { CHAT_STORE } from '../core/chat-store';
+import { LayoutService } from '../core/layout.service';
 import { AnswerBlock, AnswerChunk, ChatMessage, appendChunk, blocksToText } from '../models/chat.models';
+import { UNTITLED_CHAT } from '../models/workspace.models';
 import { AnswerBlockComponent } from './answer-block/answer-block.component';
+import { ThemeToggleComponent } from './theme-toggle/theme-toggle.component';
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [FormsModule, AnswerBlockComponent],
+  imports: [FormsModule, AnswerBlockComponent, ThemeToggleComponent],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss',
 })
@@ -27,9 +34,24 @@ export class ChatComponent implements AfterViewChecked {
   @ViewChild('promptEl') private promptEl?: ElementRef<HTMLTextAreaElement>;
 
   private readonly chat = inject(CHAT_SERVICE);
+  private readonly store = inject(CHAT_STORE);
+  private readonly layout = inject(LayoutService);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly messages = signal<ChatMessage[]>([]);
+  /** Route param, bound by withComponentInputBinding. */
+  readonly chatId = input<string>();
+
+  /**
+   * The transcript is derived from the store rather than held locally, so it
+   * survives navigation and a refresh without any syncing code.
+   */
+  readonly messages = computed(() => this.current()?.messages ?? []);
+  readonly title = computed(() => this.current()?.title ?? UNTITLED_CHAT);
+  private readonly current = computed(() => {
+    const id = this.chatId();
+    return id ? this.store.chat(id) : undefined;
+  });
+
   readonly prompt = signal('');
   readonly isLoading = signal(false);
   readonly suggestions = this.chat.suggestions;
@@ -50,6 +72,21 @@ export class ChatComponent implements AfterViewChecked {
   private shouldScroll = false;
   /** The in-flight request, so Stop can cancel it. */
   private stream?: Subscription;
+  /**
+   * The chat an answer is being written into. Captured at send time rather than
+   * read from the route: otherwise navigating mid-stream would pour the
+   * remaining chunks into whichever chat was opened next.
+   */
+  private streamingChatId?: string;
+
+  constructor() {
+    effect(() => {
+      this.chatId();
+      // Leaving a chat abandons its answer. Without this the composer in the
+      // new chat would also start out disabled.
+      untracked(() => this.stop());
+    });
+  }
 
   ngAfterViewChecked(): void {
     if (this.shouldScroll && this.historyEl) {
@@ -66,12 +103,14 @@ export class ChatComponent implements AfterViewChecked {
   }
 
   send(text = this.prompt().trim()): void {
-    if (!text || this.isLoading()) {
+    const chatId = this.chatId();
+    if (!text || !chatId || this.isLoading()) {
       return;
     }
+    this.streamingChatId = chatId;
 
-    this.messages.update((msgs) => [
-      ...msgs,
+    this.write([
+      ...this.messages(),
       { role: 'user', blocks: [{ kind: 'text', text }], time: this.now() },
     ]);
     this.prompt.set('');
@@ -88,6 +127,7 @@ export class ChatComponent implements AfterViewChecked {
         // disabled composer.
         finalize(() => {
           this.isLoading.set(false);
+          this.streamingChatId = undefined;
           this.shouldScroll = true;
           this.promptEl?.nativeElement.focus();
         }),
@@ -132,27 +172,43 @@ export class ChatComponent implements AfterViewChecked {
    * decided in one place from the array that is already in hand.
    */
   private applyChunk(chunk: AnswerChunk): void {
-    this.messages.update((msgs) => {
-      const open = this.openAssistantTurn(msgs);
-      const rest = open ? msgs.slice(0, -1) : msgs;
-      const target: ChatMessage = open ?? { role: 'assistant', blocks: [], time: this.now() };
-      return [...rest, { ...target, blocks: appendChunk(target.blocks, chunk) }];
-    });
+    const msgs = this.streamingMessages();
+    const open = this.openAssistantTurn(msgs);
+    const rest = open ? msgs.slice(0, -1) : msgs;
+    const target: ChatMessage = open ?? { role: 'assistant', blocks: [], time: this.now() };
+
+    this.write([...rest, { ...target, blocks: appendChunk(target.blocks, chunk) }]);
     this.shouldScroll = true;
   }
 
   private pushError(message: string): void {
-    this.messages.update((msgs) => {
-      const open = this.openAssistantTurn(msgs);
-      // If the answer failed before producing anything, replace the empty
-      // bubble rather than leaving a blank one above the error.
-      const rest = open && open.blocks.length === 0 ? msgs.slice(0, -1) : msgs;
-      return [
-        ...rest,
-        { role: 'assistant', blocks: [{ kind: 'text', text: message }], isError: true, time: this.now() },
-      ];
-    });
+    const msgs = this.streamingMessages();
+    const open = this.openAssistantTurn(msgs);
+    // If the answer failed before producing anything, replace the empty bubble
+    // rather than leaving a blank one above the error.
+    const rest = open && open.blocks.length === 0 ? msgs.slice(0, -1) : msgs;
+
+    this.write([
+      ...rest,
+      { role: 'assistant', blocks: [{ kind: 'text', text: message }], isError: true, time: this.now() },
+    ]);
     this.shouldScroll = true;
+  }
+
+  /** The transcript being streamed into, which may no longer be the open one. */
+  private streamingMessages(): ChatMessage[] {
+    const id = this.streamingChatId;
+    return id ? (this.store.chat(id)?.messages ?? []) : [];
+  }
+
+  /** All transcript changes go through the store — it owns persistence. */
+  private write(messages: ChatMessage[]): void {
+    const id = this.streamingChatId ?? this.chatId();
+    if (id) this.store.setMessages(id, messages);
+  }
+
+  toggleSidebar(): void {
+    this.layout.toggleSidebar();
   }
 
   /**
