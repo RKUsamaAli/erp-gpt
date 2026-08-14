@@ -85,7 +85,7 @@ as the public link until `web/` is deployed:
 - Instant preview: [open HTML preview](https://htmlpreview.github.io/?https://github.com/HammadRehmanAwan/erp-gpt/blob/feature/demo_html/demo/index.html)
 
 `demo/execution-flow.html` has no replacement in `web/` and must be carried
-across at cutover — see [`web/doc/web-plan.md`](web/doc/web-plan.md).
+across at cutover — see [`web/docs/web-plan.md`](web/docs/web-plan.md).
 
 ---
 

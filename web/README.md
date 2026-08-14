@@ -9,7 +9,7 @@ clicking through screens.
 
 Replaces [`demo/`](../demo/) once it is deployed. Until then `demo/` stays as
 the public GitHub Pages link; see the cutover section of
-[`doc/web-plan.md`](doc/web-plan.md).
+[`docs/web-plan.md`](docs/web-plan.md).
 
 ## The one rule
 
@@ -92,4 +92,4 @@ Sidebar and thread list · conversation memory and follow-ups · responsive
 breakpoints below `md` · zoneless change detection (deferred: the scroll logic
 is being rewritten anyway) · auth · markdown · charts.
 
-Full plan and open questions: [`doc/web-plan.md`](doc/web-plan.md).
+Full plan and open questions: [`docs/web-plan.md`](docs/web-plan.md).
