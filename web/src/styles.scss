@@ -16,9 +16,8 @@
   --shadow-color: rgba(0, 0, 0, 0.45);
 }
 
-* {
-  box-sizing: border-box;
-}
+/* `* { box-sizing: border-box }` used to live here. Bootstrap's Reboot sets
+   exactly that on *, ::before and ::after, so it would be a duplicate. */
 
 html,
 body {
@@ -30,8 +29,9 @@ body {
   background: radial-gradient(circle at 20% 0%, #171a22 0%, var(--surface-0) 45%),
     var(--surface-0);
   color: var(--text-primary);
+  /* No 'Inter' here: it was requested but never loaded (no font link, no
+     @font-face), so the app has always rendered in the system stack. */
   font-family:
-    'Inter',
     -apple-system,
     BlinkMacSystemFont,
     'Segoe UI',
@@ -49,4 +49,34 @@ app-root {
 
 button {
   font-family: inherit;
+}
+
+/* ---------------------------------------------------------------------------
+   Bootstrap bridge
+   ---------------------------------------------------------------------------
+   `data-bs-theme="dark"` (index.html) gives us Bootstrap's GENERIC dark palette
+   (--bs-body-bg: #212529). These overrides point Bootstrap's tokens at this
+   app's palette instead, so Bootstrap chrome matches the chat rather than
+   sitting beside it.
+
+   Load order matters and is set in angular.json: bootstrap.min.css comes FIRST,
+   this file LAST. Both set `body` at the same specificity, so the later one wins.
+
+   Caveat: .btn-* colours are compiled from Sass at build time into --bs-btn-*,
+   so overriding --bs-primary here does NOT restyle buttons. Don't reach for
+   .btn on the send button — .chat__send already owns that look.
+   --------------------------------------------------------------------------- */
+:root,
+[data-bs-theme='dark'] {
+  /* NOT `transparent`. body's own radial-gradient already wins over Reboot's
+     `background-color: var(--bs-body-bg)` because this file loads last, so this
+     token only ever reaches COMPONENTS (.form-control, .offcanvas, .dropdown-menu,
+     .modal). Transparent there means a see-through sidebar. Give them a solid
+     panel surface instead. */
+  --bs-body-bg: var(--surface-1);
+  --bs-body-color: var(--text-primary);
+  --bs-emphasis-color: var(--text-primary);
+  --bs-secondary-color: var(--text-secondary);
+  --bs-border-color: var(--border);
+  --bs-body-font-family: inherit;
 }
