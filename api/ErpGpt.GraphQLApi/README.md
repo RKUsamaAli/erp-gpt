@@ -31,6 +31,7 @@ Development environment.
 
 | File | What it is |
 |---|---|
+| [`FRONTEND.md`](FRONTEND.md) | **Start here if you are consuming the API.** The request/response envelope, which parts are generic across all 16 endpoints and which are per-endpoint, filtering and sorting grammar, error handling, and a client to copy |
 | [`API.md`](API.md) | Full reference — every endpoint with its exact JSON payload, a curl command, and the **real** response it returned |
 | [`requests.http`](requests.http) | Click "Send Request" above any block in VS Code (REST Client) or JetBrains |
 | [`ErpGpt.GraphQLApi.postman_collection.json`](ErpGpt.GraphQLApi.postman_collection.json) | Import into Postman — 19 requests grouped by Browse / Detail / Aggregation / Errors |

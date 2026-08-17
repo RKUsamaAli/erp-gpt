@@ -26,6 +26,18 @@ var port = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrWhiteSpace(port))
     builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
+// Browsers block a cross-origin POST unless the server says otherwise, so a
+// frontend served from anywhere other than this exact host cannot call the API
+// without this. Any origin is allowed because the API is read-only, carries no
+// cookies and is already public (see DEPLOY.md) — there is nothing a origin
+// restriction would protect here. Narrow it to the frontend's origin at the
+// same time as adding authentication.
+builder.Services.AddCors(options =>
+    options.AddDefaultPolicy(policy => policy
+        .AllowAnyOrigin()
+        .AllowAnyHeader()
+        .AllowAnyMethod()));
+
 // The API only ever reads. NoTracking means EF does not keep change-tracking
 // snapshots of every row it returns, which is both faster and a safety net.
 builder.Services.AddDbContextFactory<ErpDbContext>(options =>
@@ -86,6 +98,10 @@ builder.Services
     .AddErrorFilter<ErpErrorFilter>();
 
 var app = builder.Build();
+
+// Must run before the endpoints it protects, or the preflight OPTIONS request
+// falls through to a 404 and the browser reports a CORS failure.
+app.UseCors();
 
 // Liveness probe: proves the API is up AND can actually reach the database.
 app.MapGet("/health", async (IDbContextFactory<ErpDbContext> factory) =>
