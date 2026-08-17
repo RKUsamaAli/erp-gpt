@@ -65,12 +65,54 @@ gh release download data-v1 --repo HammadRehmanAwan/erp-gpt \
 The script also enables `pgvector`, so the RAG step has its vector store in the
 same instance (decision O4).
 
-## 4. Confirm and share
+## 4. Verify
+
+Three layers, cheapest first. Run them in order — each one only makes sense if
+the previous passed.
+
+**Did the data land?** Re-runnable any time, and it asserts rather than asking
+you to eyeball numbers:
+
+```bash
+./deploy/restore-dump.sh --verify "postgresql://…external URL…"
+```
+
+```
+  ok    sales orders           31465
+  ok    customers              19820
+  ok    products               504
+  ok    ERP schemas            5
+  ok    pgvector               1
+        newest order           2025-06-29
+        database size          114 MB
+```
+
+Exit code is 0 only when every row matches. A half-finished restore fails on
+the count, an empty database fails with "nothing has been restored yet", and
+the wrong URL fails the same way — the internal hostname doesn't resolve from
+your laptop.
+
+**Can the API reach it?** This is the private-network wiring, not the data:
 
 ```bash
 curl https://erpgpt-api.onrender.com/health
 # {"status":"healthy","database":"connected"}
 ```
+
+`connected` means the injected `DATABASE_URL` parsed and Postgres answered.
+On a free plan the first call can take a minute while the service wakes.
+
+**Does the whole thing work?** `verify.sh` already smoke-tests all 16
+endpoints, and it takes any address:
+
+```bash
+API=https://erpgpt-api.onrender.com ./api/ErpGpt.GraphQLApi/verify.sh
+```
+
+18 checks — browse, detail, aggregations, plus the page cap and
+`INVALID_DATE_RANGE` guard rails. It exercises specific rows
+(`customer(id:29641)`, `order(id:51131)`, `product(id:782)`), so passing means
+the restore is genuinely intact and not merely the right size.
 
 Then send the team the two URLs. Nothing to install on their side.
 
