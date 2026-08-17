@@ -22,7 +22,7 @@ services:
     healthCheckPath: /health
     autoDeploy: true
     # Only rebuild when the API actually changes — not on kb/ or docs/ commits.
-    buildFilters:
+    buildFilter:
       paths:
         - api/ErpGpt.GraphQLApi/**
     envVars:
