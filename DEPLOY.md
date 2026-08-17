@@ -88,17 +88,38 @@ Then send the team the two URLs. Nothing to install on their side.
 API automatically. `buildFilters` limits that to commits touching
 `api/ErpGpt.GraphQLApi/**`, so `kb/` and `docs/` changes don't trigger builds.
 
-## Cost
+## Cost — $0
 
-| Service | Plan | Why |
+Every service is on a free plan. Four limits come with that, and all four are
+survivable for a test environment, but tell the team about the first two or
+they will file bugs against them.
+
+**Requests are slow after idle.** Free web services sleep after 15 minutes
+without traffic and take about a minute to wake. The first `/graphql` request
+of the morning looks like a hang, then everything is normal.
+
+**The database expires.** A free Postgres is deleted **30 days after
+creation** (plus a 14-day grace period to upgrade). Put a reminder in the
+calendar now. If it lapses, you get a new empty database and redo step 3 —
+which is why that step is a script and not a list of commands.
+
+**No backups.** Free instances have no point-in-time recovery. Nothing here is
+irreplaceable — the dump is the source of truth — but don't let anything
+one-of-a-kind accumulate in this database.
+
+**One free database per workspace**, and 750 free instance hours per workspace
+per calendar month across all services. Sleeping services don't burn hours, so
+two services on one workspace stay inside it comfortably.
+
+When this stops being disposable, it's two words in `render.yaml`:
+
+| Service | Free → | Cost |
 |---|---|---|
-| `erpgpt-api` | Starter, $7/mo | Free web services sleep after 15 min idle and take ~1 min to wake — that reads as "the API is down" to the first person who tries it |
-| `erpgpt-db-ui` | Free, $0 | Opened occasionally; a cold start is fine here |
-| `erpgpt-db` | Basic-256mb, $6/mo | Free Postgres is **deleted 30 days after creation**. The dataset is only 114 MB, so disk (~$0.30/GB/mo) is negligible |
+| `erpgpt-api` | `plan: starter` | $7/mo — no cold starts |
+| `erpgpt-db` | `plan: basic-256mb` | $6/mo — no expiry, backups included |
 
-Roughly **$13/month**. To evaluate at $0 first, set every `plan:` to `free` in
-`render.yaml` — just diary the 30-day expiry, because reloading means redoing
-step 3.
+The 114 MB dataset is far inside the free 1 GB cap, so storage is never the
+reason to upgrade.
 
 ## Access and exposure
 
@@ -130,4 +151,5 @@ environment, do the two things that actually close it:
 | `pg_restore: error: unsupported version` | Local pg_restore is older than 16. Use `deploy/restore-dump.sh`, which runs v16 in a container |
 | Restore fails on `ALTER ... OWNER TO erpgpt` | Missing `--no-owner --no-privileges`. Render's DB user is generated, not `erpgpt`. The script passes both |
 | Queries return empty arrays | Date range — the data is 2022–2025, not 2011–2014 |
-| pgweb is slow to load first time | Free plan cold start, ~1 min. Move it to `starter` if it annoys the team |
+| First request of the day takes ~1 min | Free plan cold start after 15 min idle. Expected. `plan: starter` removes it |
+| Database vanished / `does not exist` after a month | Free Postgres expires 30 days after creation. Create a new one and re-run step 3, or move to `basic-256mb` |

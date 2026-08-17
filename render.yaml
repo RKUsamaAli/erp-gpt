@@ -9,13 +9,13 @@
 
 services:
   # ── The API under test ────────────────────────────────────────────────────
-  # Kept on a paid instance deliberately: free services sleep after 15 minutes
-  # of inactivity and take ~1 minute to wake, which reads as "the API is broken"
-  # to whoever on the team hits it first.
+  # Free sleeps after 15 minutes idle and takes ~1 minute to wake. Tell the team
+  # that first request is slow, or it reads as "the API is down". Upgrading is
+  # one word: plan: starter ($7/mo).
   - type: web
     name: erpgpt-api
     runtime: docker
-    plan: starter
+    plan: free
     region: singapore
     dockerfilePath: ./api/ErpGpt.GraphQLApi/Dockerfile
     dockerContext: ./api/ErpGpt.GraphQLApi
@@ -57,11 +57,13 @@ services:
           property: connectionString
 
 databases:
-  # AdventureWorks restores to roughly 250 MB. The free plan would hold it, but
-  # free databases are deleted 30 days after creation — losing a shared test
-  # environment on a timer is not worth the $6/month.
+  # AdventureWorks restores to 114 MB, comfortably inside the free 1 GB cap.
+  #
+  # The catch worth diarising: a free database EXPIRES 30 days after creation
+  # and is deleted 14 days later, and free instances get no backups. When the
+  # environment stops being disposable, switch to plan: basic-256mb ($6/mo).
   - name: erpgpt-db
-    plan: basic-256mb
+    plan: free
     postgresMajorVersion: "16"
     region: singapore
     ipAllowList:
