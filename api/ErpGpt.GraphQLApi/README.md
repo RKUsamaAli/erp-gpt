@@ -49,7 +49,7 @@ With the API running, in a second terminal:
 ```
 
 It exercises all 16 endpoints plus the guard rails and prints a pass/fail
-line for each — 18 checks in total. Point it elsewhere with
+line for each — 19 checks in total. Point it elsewhere with
 `API=http://localhost:5100 ./verify.sh`.
 
 To confirm the *numbers* rather than just that endpoints respond, compare an
@@ -137,6 +137,13 @@ products(where: {
 # orders in a date range
 orders(where: { orderDate: { gte: "2024-01-01T00:00:00Z" } })
 ```
+
+> Date filters need the full ISO form — `"2024-01-01"` alone is rejected by the
+> `DateTime` scalar. The `Z` is accepted and then ignored: these columns are
+> `timestamp without time zone`, so there is no offset to apply. That only
+> works because `Program.cs` sets `Npgsql.EnableLegacyTimestampBehavior`;
+> without it Npgsql refuses the Kind=Utc value the scalar produces and every
+> date filter fails. `verify.sh` guards it.
 
 ---
 
@@ -272,7 +279,7 @@ ErpGpt.GraphQLApi/
 ├── API.md                                 Every endpoint's request payload + response
 ├── requests.http                          Click-to-run requests for the IDE
 ├── ErpGpt.GraphQLApi.postman_collection.json
-└── verify.sh                              18 checks against a running API
+└── verify.sh                              19 checks against a running API
 ```
 
 `Query.Browse.cs` and `Query.Aggregations.cs` are two halves of the **same**

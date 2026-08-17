@@ -52,6 +52,14 @@ check "territories"       "{ territories(take:2){ totalCount items { name group 
 check "salesPeople"       "{ salesPeople(take:2){ totalCount items { businessEntityId person { fullName } } } }"
 
 echo
+echo "Date filtering (1)"
+# Regression guard. Date columns are 'timestamp without time zone', and the
+# GraphQL DateTime scalar hands EF a Kind=Utc value, which Npgsql refuses to
+# write to such a column. Without the legacy-timestamp switch in Program.cs
+# every one of these fails with QUERY_FAILED.
+check "orders by orderDate" "{ orders(take:2, where:{ orderDate:{ gte:\\\"2024-01-01T00:00:00Z\\\" } }, order:[{ orderDate: ASC }]){ totalCount items { salesOrderId orderDate } } }"
+
+echo
 echo "Detail (3)"
 check "customer(id)"      "{ customer(id:29641){ displayName orders { salesOrderId } } }"
 check "order(id)"         "{ order(id:51131){ salesOrderId lines { lineTotal } } }"

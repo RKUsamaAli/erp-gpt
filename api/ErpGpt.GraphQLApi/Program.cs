@@ -4,6 +4,20 @@ using HotChocolate.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
+// Every date column here is `timestamp without time zone` — AdventureWorks
+// dates are plain business dates, and ErpDbContext pins them that way on
+// purpose. GraphQL's DateTime scalar is offset-aware, so a filter literal
+// arrives as Kind=Utc and Npgsql refuses to write it to such a column:
+// "Cannot write DateTime with Kind=UTC to PostgreSQL type 'timestamp without
+// time zone'". That made every `where: { orderDate: ... }` fail.
+//
+// This switch tells Npgsql to accept any Kind for those columns and ignore
+// the offset, which is the correct reading when the column has no time zone.
+// Set before the first connection is built, and deliberately preferred over
+// swapping the GraphQL scalar, which would change how every date is
+// serialised to callers.
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Managed hosts (Render, Railway, Fly) choose the port for us and pass it in.

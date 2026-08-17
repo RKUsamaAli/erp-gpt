@@ -59,8 +59,13 @@ this step after a `docker compose down -v`.
 ## 4. Run the API
 
 ```bash
-dotnet run --project ErpGpt.Api
+dotnet run --project ErpGpt.GraphQLApi
 ```
+
+This is the project that reads the AdventureWorks dump you just restored, and
+the one deployed to Render (see [DEPLOY.md](DEPLOY.md)). `ErpGpt.Api` is the
+earlier step-1 prototype and seeds its own schema instead — don't run it
+against this database.
 
 When you see `Now listening on: http://localhost:5000`, open:
 
@@ -77,8 +82,8 @@ In the IDE at `/graphql`, click **Create Document**, paste a query, and
 press Cmd+Alt+Enter (or the Run button):
 
 ```graphql
-{ topCustomers(from: "2013-01-01", to: "2014-06-30", limit: 5)
-  { name region totalRevenue orderCount } }
+{ topCustomers(from: "2024-01-01", to: "2024-12-31", limit: 5)
+  { customerId customerName territory revenue orderCount } }
 ```
 
 **Browse Schema** in the same IDE lists every available operation with its
@@ -118,8 +123,8 @@ password `devonly`.
 | Start the database | `docker compose up -d` |
 | Stop the database | `docker compose stop` |
 | Is it running? | `docker ps` → look for `api-db-1` |
-| Run the API | `dotnet run --project ErpGpt.Api` |
-| Auto-restart API on code changes | `dotnet watch --project ErpGpt.Api` |
+| Run the API | `dotnet run --project ErpGpt.GraphQLApi` |
+| Auto-restart API on code changes | `dotnet watch --project ErpGpt.GraphQLApi` |
 | Regenerate KB metadata | `dotnet run --project ErpGpt.MetadataGen` |
 | Wipe everything and start over | `docker compose down -v && docker compose up -d`, then redo step 3 |
 
@@ -131,9 +136,9 @@ password `devonly`.
 | `Connection refused` / errors mentioning `localhost:5432` | Database isn't up — `docker compose up -d`, check `docker ps` |
 | `NETSDK1045: does not support targeting .NET 8.0` | SDK too old — install .NET 8+, then open a new terminal |
 | `You must install or update .NET ... version '8.0.0'` | `git pull` — the repo's roll-forward setting fixes this |
-| `Address already in use` on port 5000 | The API is already running in another terminal — only one instance can hold the port. Ctrl+C the old one, or `lsof -ti :5000 \| xargs kill -9`. Rarely on Mac: AirPlay Receiver holds 5000 — disable it in System Settings, or change the port in `ErpGpt.Api/Properties/launchSettings.json` |
+| `Address already in use` on port 5000 | The API is already running in another terminal — only one instance can hold the port. Ctrl+C the old one, or `lsof -ti :5000 \| xargs kill -9`. Rarely on Mac: AirPlay Receiver holds 5000 — disable it in System Settings, or change the port in `ErpGpt.GraphQLApi/Properties/launchSettings.json` |
 | Port 5432 already in use | Another Postgres running locally — stop it, or map `"5433:5432"` in `docker-compose.yml` and update `appsettings.json` |
-| GraphQL queries return empty lists | Check your date range — AdventureWorks data is 2011–2014 |
+| GraphQL queries return empty lists | Check your date range — this dump's orders run 2022-05-30 to 2025-06-29 |
 | `relation "sales.customer" does not exist` | Dataset not restored — do step 3 |
 
 ## Rules once you're in
