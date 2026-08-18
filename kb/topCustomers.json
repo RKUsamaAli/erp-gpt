@@ -1,11 +1,12 @@
 {
   "endpoint": "topCustomers",
+  "family": "aggregation",
+  "result_shape": "list",
   "description": "Ranks customers by total revenue within a date range. Use for any 'biggest / best / top customers' style question.",
   "params": [
-    { "name": "limit",   "type": "Int",  "required": false, "default": 10, "description": "How many customers to return, capped server-side at 100" },
-    { "name": "from",    "type": "Date", "required": true,  "description": "Start of the date range, YYYY-MM-DD" },
-    { "name": "to",      "type": "Date", "required": true,  "description": "End of the date range, YYYY-MM-DD" },
-    { "name": "orderBy", "type": "CustomerOrder", "required": false, "default": "REVENUE_DESC", "values": ["REVENUE_DESC", "REVENUE_ASC"], "description": "Sort direction" }
+    { "name": "from",  "type": "LocalDate", "required": true,  "description": "Start of the date range, YYYY-MM-DD. Inclusive." },
+    { "name": "to",    "type": "LocalDate", "required": true,  "description": "End of the date range, YYYY-MM-DD. The whole day is included." },
+    { "name": "limit", "type": "Int",       "required": false, "default": 10, "description": "How many customers to return, capped server-side at 100" }
   ],
   "example_questions": [
     "who are our biggest customers this year",
@@ -16,8 +17,13 @@
     "sab se baray customers kaun hain",
     "hamara sab se bara client kaun hai revenue ke hisaab se"
   ],
-  "graphql": "query TopCustomers($limit: Int, $from: Date!, $to: Date!, $orderBy: CustomerOrder) { topCustomers(limit: $limit, from: $from, to: $to, orderBy: $orderBy) { name totalRevenue orderCount } }",
-  "returns": "List of customer names with summed revenue and order count for the period, highest first.",
-  "do_not_use_when": "The user names one specific customer — use customerDetail instead. The user asks about revenue over time rather than a ranking — use revenueByPeriod.",
-  "notes": "If the user says 'this year' resolve to Jan 1 of the current year through today. 'Last quarter' means the previous complete calendar quarter."
+  "follow_up_questions": [
+    { "label": "By region",    "prompt": "Break that revenue down by sales region" },
+    { "label": "By category",  "prompt": "Break that revenue down by product category" },
+    { "label": "Top products", "prompt": "Which products sold the most over the same period?" }
+  ],
+  "graphql": "query TopCustomers($from: LocalDate!, $to: LocalDate!, $limit: Int) { topCustomers(from: $from, to: $to, limit: $limit) { customerId customerName territory revenue orderCount } }",
+  "returns": "A plain list of customers with their summed revenue, sales region and order count for the period, highest revenue first.",
+  "do_not_use_when": "The user names one specific customer — use customer(id:) instead. The user asks about revenue over time rather than a ranking — use revenueByPeriod. The user wants headline totals rather than a ranking — use salesSummary.",
+  "notes": "Dates are the LocalDate scalar, not Date. If the user says 'this year' resolve to Jan 1 of the current year through today. 'Last quarter' means the previous complete calendar quarter. Order data in this database runs 2022-05-30 to 2025-06-29; ranges outside that return an empty list rather than an error."
 }
