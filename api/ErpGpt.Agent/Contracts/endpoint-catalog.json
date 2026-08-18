@@ -1,0 +1,537 @@
+{
+  "generatedFrom": "GraphQL introspection of ErpGpt.GraphQLApi",
+  "endpoints": [
+    {
+      "endpoint": "customer",
+      "family": "detail",
+      "result_shape": "object",
+      "returns": "Customer",
+      "resultType": "Customer",
+      "args": [
+        {
+          "name": "id",
+          "type": "Int!",
+          "required": true
+        }
+      ],
+      "selectableFields": [
+        "storeId",
+        "customerId",
+        "displayName",
+        "personId",
+        "territoryId",
+        "isStore"
+      ]
+    },
+    {
+      "endpoint": "customers",
+      "family": "browse",
+      "result_shape": "connection",
+      "returns": "CustomersCollectionSegment",
+      "resultType": "Customer",
+      "args": [
+        {
+          "name": "skip",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "take",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "where",
+          "type": "CustomerFilterInput",
+          "required": false
+        },
+        {
+          "name": "order",
+          "type": "[CustomerSortInput!]",
+          "required": false
+        }
+      ],
+      "selectableFields": [
+        "storeId",
+        "customerId",
+        "displayName",
+        "personId",
+        "territoryId",
+        "isStore"
+      ]
+    },
+    {
+      "endpoint": "order",
+      "family": "detail",
+      "result_shape": "object",
+      "returns": "SalesOrder",
+      "resultType": "SalesOrder",
+      "args": [
+        {
+          "name": "id",
+          "type": "Int!",
+          "required": true
+        }
+      ],
+      "selectableFields": [
+        "salesOrderId",
+        "orderDate",
+        "dueDate",
+        "shipDate",
+        "status",
+        "onlineOrderFlag",
+        "purchaseOrderNumber",
+        "subTotal",
+        "taxAmt",
+        "freight",
+        "totalDue",
+        "customerId",
+        "salesPersonId",
+        "territoryId",
+        "shipToAddressId"
+      ]
+    },
+    {
+      "endpoint": "orderLines",
+      "family": "browse",
+      "result_shape": "connection",
+      "returns": "OrderLinesCollectionSegment",
+      "resultType": "SalesOrderLine",
+      "args": [
+        {
+          "name": "skip",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "take",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "where",
+          "type": "SalesOrderLineFilterInput",
+          "required": false
+        },
+        {
+          "name": "order",
+          "type": "[SalesOrderLineSortInput!]",
+          "required": false
+        }
+      ],
+      "selectableFields": [
+        "orderQty",
+        "unitPrice",
+        "unitPriceDiscount",
+        "salesOrderId",
+        "salesOrderDetailId",
+        "lineTotal",
+        "productId",
+        "carrierTrackingNumber"
+      ]
+    },
+    {
+      "endpoint": "orders",
+      "family": "browse",
+      "result_shape": "connection",
+      "returns": "OrdersCollectionSegment",
+      "resultType": "SalesOrder",
+      "args": [
+        {
+          "name": "skip",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "take",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "where",
+          "type": "SalesOrderFilterInput",
+          "required": false
+        },
+        {
+          "name": "order",
+          "type": "[SalesOrderSortInput!]",
+          "required": false
+        }
+      ],
+      "selectableFields": [
+        "salesOrderId",
+        "orderDate",
+        "dueDate",
+        "shipDate",
+        "status",
+        "onlineOrderFlag",
+        "purchaseOrderNumber",
+        "subTotal",
+        "taxAmt",
+        "freight",
+        "totalDue",
+        "customerId",
+        "salesPersonId",
+        "territoryId",
+        "shipToAddressId"
+      ]
+    },
+    {
+      "endpoint": "product",
+      "family": "detail",
+      "result_shape": "object",
+      "returns": "Product",
+      "resultType": "Product",
+      "args": [
+        {
+          "name": "id",
+          "type": "Int!",
+          "required": true
+        }
+      ],
+      "selectableFields": [
+        "sellEndDate",
+        "discontinuedDate",
+        "productId",
+        "name",
+        "productNumber",
+        "listPrice",
+        "standardCost",
+        "color",
+        "size",
+        "weight",
+        "makeFlag",
+        "finishedGoodsFlag",
+        "sellStartDate",
+        "isCurrentlySold",
+        "productSubcategoryId"
+      ]
+    },
+    {
+      "endpoint": "productCategories",
+      "family": "browse",
+      "result_shape": "connection",
+      "returns": "ProductCategoriesCollectionSegment",
+      "resultType": "ProductCategory",
+      "args": [
+        {
+          "name": "skip",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "take",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "where",
+          "type": "ProductCategoryFilterInput",
+          "required": false
+        },
+        {
+          "name": "order",
+          "type": "[ProductCategorySortInput!]",
+          "required": false
+        }
+      ],
+      "selectableFields": [
+        "productCategoryId",
+        "name"
+      ]
+    },
+    {
+      "endpoint": "products",
+      "family": "browse",
+      "result_shape": "connection",
+      "returns": "ProductsCollectionSegment",
+      "resultType": "Product",
+      "args": [
+        {
+          "name": "skip",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "take",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "where",
+          "type": "ProductFilterInput",
+          "required": false
+        },
+        {
+          "name": "order",
+          "type": "[ProductSortInput!]",
+          "required": false
+        }
+      ],
+      "selectableFields": [
+        "sellEndDate",
+        "discontinuedDate",
+        "productId",
+        "name",
+        "productNumber",
+        "listPrice",
+        "standardCost",
+        "color",
+        "size",
+        "weight",
+        "makeFlag",
+        "finishedGoodsFlag",
+        "sellStartDate",
+        "isCurrentlySold",
+        "productSubcategoryId"
+      ]
+    },
+    {
+      "endpoint": "revenueByPeriod",
+      "family": "aggregation",
+      "result_shape": "list",
+      "returns": "[PeriodRevenue!]!",
+      "resultType": "PeriodRevenue",
+      "args": [
+        {
+          "name": "from",
+          "type": "LocalDate!",
+          "required": true
+        },
+        {
+          "name": "to",
+          "type": "LocalDate!",
+          "required": true
+        },
+        {
+          "name": "interval",
+          "type": "Interval!",
+          "required": false
+        }
+      ],
+      "selectableFields": [
+        "year",
+        "period",
+        "label",
+        "revenue",
+        "orderCount"
+      ]
+    },
+    {
+      "endpoint": "salesByCategory",
+      "family": "aggregation",
+      "result_shape": "list",
+      "returns": "[CategorySales!]!",
+      "resultType": "CategorySales",
+      "args": [
+        {
+          "name": "from",
+          "type": "LocalDate!",
+          "required": true
+        },
+        {
+          "name": "to",
+          "type": "LocalDate!",
+          "required": true
+        }
+      ],
+      "selectableFields": [
+        "categoryId",
+        "category",
+        "revenue",
+        "unitsSold"
+      ]
+    },
+    {
+      "endpoint": "salesByTerritory",
+      "family": "aggregation",
+      "result_shape": "list",
+      "returns": "[TerritorySales!]!",
+      "resultType": "TerritorySales",
+      "args": [
+        {
+          "name": "from",
+          "type": "LocalDate!",
+          "required": true
+        },
+        {
+          "name": "to",
+          "type": "LocalDate!",
+          "required": true
+        }
+      ],
+      "selectableFields": [
+        "territoryId",
+        "territory",
+        "group",
+        "revenue",
+        "orderCount"
+      ]
+    },
+    {
+      "endpoint": "salesPeople",
+      "family": "browse",
+      "result_shape": "connection",
+      "returns": "SalesPeopleCollectionSegment",
+      "resultType": "SalesPerson",
+      "args": [
+        {
+          "name": "skip",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "take",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "where",
+          "type": "SalesPersonFilterInput",
+          "required": false
+        },
+        {
+          "name": "order",
+          "type": "[SalesPersonSortInput!]",
+          "required": false
+        }
+      ],
+      "selectableFields": [
+        "businessEntityId",
+        "territoryId",
+        "salesQuota",
+        "bonus",
+        "commissionPct",
+        "salesYtd",
+        "salesLastYear"
+      ]
+    },
+    {
+      "endpoint": "salesSummary",
+      "family": "aggregation",
+      "result_shape": "object",
+      "returns": "SalesSummary!",
+      "resultType": "SalesSummary",
+      "args": [
+        {
+          "name": "from",
+          "type": "LocalDate!",
+          "required": true
+        },
+        {
+          "name": "to",
+          "type": "LocalDate!",
+          "required": true
+        }
+      ],
+      "selectableFields": [
+        "totalRevenue",
+        "orderCount",
+        "averageOrderValue",
+        "customerCount",
+        "from",
+        "to"
+      ]
+    },
+    {
+      "endpoint": "territories",
+      "family": "browse",
+      "result_shape": "connection",
+      "returns": "TerritoriesCollectionSegment",
+      "resultType": "Territory",
+      "args": [
+        {
+          "name": "skip",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "take",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "where",
+          "type": "TerritoryFilterInput",
+          "required": false
+        },
+        {
+          "name": "order",
+          "type": "[TerritorySortInput!]",
+          "required": false
+        }
+      ],
+      "selectableFields": [
+        "territoryId",
+        "name",
+        "countryRegionCode",
+        "group",
+        "salesYtd",
+        "salesLastYear"
+      ]
+    },
+    {
+      "endpoint": "topCustomers",
+      "family": "aggregation",
+      "result_shape": "list",
+      "returns": "[CustomerRevenue!]!",
+      "resultType": "CustomerRevenue",
+      "args": [
+        {
+          "name": "from",
+          "type": "LocalDate!",
+          "required": true
+        },
+        {
+          "name": "to",
+          "type": "LocalDate!",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "Int!",
+          "required": false
+        }
+      ],
+      "selectableFields": [
+        "customerId",
+        "customerName",
+        "territory",
+        "revenue",
+        "orderCount"
+      ]
+    },
+    {
+      "endpoint": "topProducts",
+      "family": "aggregation",
+      "result_shape": "list",
+      "returns": "[ProductSales!]!",
+      "resultType": "ProductSales",
+      "args": [
+        {
+          "name": "from",
+          "type": "LocalDate!",
+          "required": true
+        },
+        {
+          "name": "to",
+          "type": "LocalDate!",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "Int!",
+          "required": false
+        }
+      ],
+      "selectableFields": [
+        "productId",
+        "productName",
+        "productNumber",
+        "category",
+        "revenue",
+        "unitsSold"
+      ]
+    }
+  ]
+}
