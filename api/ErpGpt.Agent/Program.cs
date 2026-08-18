@@ -1,6 +1,10 @@
 using ErpGpt.Agent;
 using ErpGpt.Agent.Services;
 
+// Validation is provable without a database, a vector store or a model.
+if (args.Length > 0 && args[0] == "--selftest")
+    return ValidatorSelfTest.Run();
+
 Console.WriteLine("=================================================");
 Console.WriteLine("        ERP GPT - Semantic Kernel RAG Agent      ");
 Console.WriteLine("=================================================");
@@ -17,7 +21,7 @@ if (args.Length > 0)
 {
     string question = string.Join(" ", args);
     await RunQuestionAsync(pipeline, question);
-    return;
+    return 0;
 }
 
 // Interactive Console Mode
@@ -65,3 +69,5 @@ static async Task RunQuestionAsync(AgentPipeline pipeline, string question)
         Console.ResetColor();
     }
 }
+
+return 0;

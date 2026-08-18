@@ -1,0 +1,3035 @@
+{
+  "generatedFrom": "GraphQL introspection",
+  "source": "http://localhost:5099/graphql",
+  "endpoints": [
+    {
+      "endpoint": "customer",
+      "family": "detail",
+      "result_shape": "object",
+      "returns": "Customer",
+      "resultType": "Customer",
+      "args": [
+        {
+          "name": "id",
+          "type": "Int!",
+          "required": true
+        }
+      ],
+      "enumArgs": {},
+      "selectableFields": [
+        "storeId",
+        "customerId",
+        "displayName",
+        "personId",
+        "territoryId",
+        "isStore"
+      ],
+      "filterableFields": [],
+      "sortableFields": []
+    },
+    {
+      "endpoint": "customers",
+      "family": "browse",
+      "result_shape": "connection",
+      "returns": "CustomersCollectionSegment",
+      "resultType": "Customer",
+      "args": [
+        {
+          "name": "skip",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "take",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "where",
+          "type": "CustomerFilterInput",
+          "required": false
+        },
+        {
+          "name": "order",
+          "type": "[CustomerSortInput!]",
+          "required": false
+        }
+      ],
+      "enumArgs": {},
+      "selectableFields": [
+        "storeId",
+        "customerId",
+        "displayName",
+        "personId",
+        "territoryId",
+        "isStore"
+      ],
+      "filterableFields": [
+        {
+          "path": "customerId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "person.businessEntityId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "person.firstName",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "person.lastName",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "person.middleName",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "person.personType",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "personId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "store.businessEntityId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "store.name",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "store.salesPersonId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "storeId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "territory.countryRegionCode",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "territory.group",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "territory.name",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "territory.salesLastYear",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "territory.salesYtd",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "territory.territoryId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "territoryId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        }
+      ],
+      "sortableFields": [
+        "customerId",
+        "person.businessEntityId",
+        "person.firstName",
+        "person.lastName",
+        "person.middleName",
+        "person.personType",
+        "personId",
+        "store.businessEntityId",
+        "store.name",
+        "store.salesPersonId",
+        "storeId",
+        "territory.countryRegionCode",
+        "territory.group",
+        "territory.name",
+        "territory.salesLastYear",
+        "territory.salesYtd",
+        "territory.territoryId",
+        "territoryId"
+      ]
+    },
+    {
+      "endpoint": "order",
+      "family": "detail",
+      "result_shape": "object",
+      "returns": "SalesOrder",
+      "resultType": "SalesOrder",
+      "args": [
+        {
+          "name": "id",
+          "type": "Int!",
+          "required": true
+        }
+      ],
+      "enumArgs": {},
+      "selectableFields": [
+        "salesOrderId",
+        "orderDate",
+        "dueDate",
+        "shipDate",
+        "status",
+        "onlineOrderFlag",
+        "purchaseOrderNumber",
+        "subTotal",
+        "taxAmt",
+        "freight",
+        "totalDue",
+        "customerId",
+        "salesPersonId",
+        "territoryId",
+        "shipToAddressId"
+      ],
+      "filterableFields": [],
+      "sortableFields": []
+    },
+    {
+      "endpoint": "orderLines",
+      "family": "browse",
+      "result_shape": "connection",
+      "returns": "OrderLinesCollectionSegment",
+      "resultType": "SalesOrderLine",
+      "args": [
+        {
+          "name": "skip",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "take",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "where",
+          "type": "SalesOrderLineFilterInput",
+          "required": false
+        },
+        {
+          "name": "order",
+          "type": "[SalesOrderLineSortInput!]",
+          "required": false
+        }
+      ],
+      "enumArgs": {},
+      "selectableFields": [
+        "orderQty",
+        "unitPrice",
+        "unitPriceDiscount",
+        "salesOrderId",
+        "salesOrderDetailId",
+        "lineTotal",
+        "productId",
+        "carrierTrackingNumber"
+      ],
+      "filterableFields": [
+        {
+          "path": "carrierTrackingNumber",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "order.customerId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "order.dueDate",
+          "valueKind": "date",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "order.freight",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "order.onlineOrderFlag",
+          "valueKind": "boolean",
+          "operators": [
+            "eq",
+            "neq"
+          ]
+        },
+        {
+          "path": "order.orderDate",
+          "valueKind": "date",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "order.purchaseOrderNumber",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "order.salesOrderId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "order.salesPersonId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "order.shipDate",
+          "valueKind": "date",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "order.shipToAddressId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "order.status",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "order.subTotal",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "order.taxAmt",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "order.territoryId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "order.totalDue",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "orderQty",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "product.color",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "product.discontinuedDate",
+          "valueKind": "date",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "product.finishedGoodsFlag",
+          "valueKind": "boolean",
+          "operators": [
+            "eq",
+            "neq"
+          ]
+        },
+        {
+          "path": "product.listPrice",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "product.makeFlag",
+          "valueKind": "boolean",
+          "operators": [
+            "eq",
+            "neq"
+          ]
+        },
+        {
+          "path": "product.name",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "product.productId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "product.productNumber",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "product.productSubcategoryId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "product.sellEndDate",
+          "valueKind": "date",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "product.sellStartDate",
+          "valueKind": "date",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "product.size",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "product.standardCost",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "product.weight",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "productId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "salesOrderDetailId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "salesOrderId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "unitPrice",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "unitPriceDiscount",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        }
+      ],
+      "sortableFields": [
+        "carrierTrackingNumber",
+        "order.customerId",
+        "order.dueDate",
+        "order.freight",
+        "order.onlineOrderFlag",
+        "order.orderDate",
+        "order.purchaseOrderNumber",
+        "order.salesOrderId",
+        "order.salesPersonId",
+        "order.shipDate",
+        "order.shipToAddressId",
+        "order.status",
+        "order.subTotal",
+        "order.taxAmt",
+        "order.territoryId",
+        "order.totalDue",
+        "orderQty",
+        "product.color",
+        "product.discontinuedDate",
+        "product.finishedGoodsFlag",
+        "product.listPrice",
+        "product.makeFlag",
+        "product.name",
+        "product.productId",
+        "product.productNumber",
+        "product.productSubcategoryId",
+        "product.sellEndDate",
+        "product.sellStartDate",
+        "product.size",
+        "product.standardCost",
+        "product.weight",
+        "productId",
+        "salesOrderDetailId",
+        "salesOrderId",
+        "unitPrice",
+        "unitPriceDiscount"
+      ]
+    },
+    {
+      "endpoint": "orders",
+      "family": "browse",
+      "result_shape": "connection",
+      "returns": "OrdersCollectionSegment",
+      "resultType": "SalesOrder",
+      "args": [
+        {
+          "name": "skip",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "take",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "where",
+          "type": "SalesOrderFilterInput",
+          "required": false
+        },
+        {
+          "name": "order",
+          "type": "[SalesOrderSortInput!]",
+          "required": false
+        }
+      ],
+      "enumArgs": {},
+      "selectableFields": [
+        "salesOrderId",
+        "orderDate",
+        "dueDate",
+        "shipDate",
+        "status",
+        "onlineOrderFlag",
+        "purchaseOrderNumber",
+        "subTotal",
+        "taxAmt",
+        "freight",
+        "totalDue",
+        "customerId",
+        "salesPersonId",
+        "territoryId",
+        "shipToAddressId"
+      ],
+      "filterableFields": [
+        {
+          "path": "customer.customerId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "customer.personId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "customer.storeId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "customer.territoryId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "customerId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "dueDate",
+          "valueKind": "date",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "freight",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "onlineOrderFlag",
+          "valueKind": "boolean",
+          "operators": [
+            "eq",
+            "neq"
+          ]
+        },
+        {
+          "path": "orderDate",
+          "valueKind": "date",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "purchaseOrderNumber",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "salesOrderId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "salesPerson.bonus",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "salesPerson.businessEntityId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "salesPerson.commissionPct",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "salesPerson.salesLastYear",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "salesPerson.salesQuota",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "salesPerson.salesYtd",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "salesPerson.territoryId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "salesPersonId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "shipDate",
+          "valueKind": "date",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "shipToAddress.addressId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "shipToAddress.addressLine1",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "shipToAddress.addressLine2",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "shipToAddress.city",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "shipToAddress.postalCode",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "shipToAddress.stateProvinceId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "shipToAddressId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "status",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "subTotal",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "taxAmt",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "territory.countryRegionCode",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "territory.group",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "territory.name",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "territory.salesLastYear",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "territory.salesYtd",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "territory.territoryId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "territoryId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "totalDue",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        }
+      ],
+      "sortableFields": [
+        "customer.customerId",
+        "customer.personId",
+        "customer.storeId",
+        "customer.territoryId",
+        "customerId",
+        "dueDate",
+        "freight",
+        "onlineOrderFlag",
+        "orderDate",
+        "purchaseOrderNumber",
+        "salesOrderId",
+        "salesPerson.bonus",
+        "salesPerson.businessEntityId",
+        "salesPerson.commissionPct",
+        "salesPerson.salesLastYear",
+        "salesPerson.salesQuota",
+        "salesPerson.salesYtd",
+        "salesPerson.territoryId",
+        "salesPersonId",
+        "shipDate",
+        "shipToAddress.addressId",
+        "shipToAddress.addressLine1",
+        "shipToAddress.addressLine2",
+        "shipToAddress.city",
+        "shipToAddress.postalCode",
+        "shipToAddress.stateProvinceId",
+        "shipToAddressId",
+        "status",
+        "subTotal",
+        "taxAmt",
+        "territory.countryRegionCode",
+        "territory.group",
+        "territory.name",
+        "territory.salesLastYear",
+        "territory.salesYtd",
+        "territory.territoryId",
+        "territoryId",
+        "totalDue"
+      ]
+    },
+    {
+      "endpoint": "product",
+      "family": "detail",
+      "result_shape": "object",
+      "returns": "Product",
+      "resultType": "Product",
+      "args": [
+        {
+          "name": "id",
+          "type": "Int!",
+          "required": true
+        }
+      ],
+      "enumArgs": {},
+      "selectableFields": [
+        "sellEndDate",
+        "discontinuedDate",
+        "productId",
+        "name",
+        "productNumber",
+        "listPrice",
+        "standardCost",
+        "color",
+        "size",
+        "weight",
+        "makeFlag",
+        "finishedGoodsFlag",
+        "sellStartDate",
+        "isCurrentlySold",
+        "productSubcategoryId"
+      ],
+      "filterableFields": [],
+      "sortableFields": []
+    },
+    {
+      "endpoint": "productCategories",
+      "family": "browse",
+      "result_shape": "connection",
+      "returns": "ProductCategoriesCollectionSegment",
+      "resultType": "ProductCategory",
+      "args": [
+        {
+          "name": "skip",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "take",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "where",
+          "type": "ProductCategoryFilterInput",
+          "required": false
+        },
+        {
+          "name": "order",
+          "type": "[ProductCategorySortInput!]",
+          "required": false
+        }
+      ],
+      "enumArgs": {},
+      "selectableFields": [
+        "productCategoryId",
+        "name"
+      ],
+      "filterableFields": [
+        {
+          "path": "name",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "productCategoryId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        }
+      ],
+      "sortableFields": [
+        "name",
+        "productCategoryId"
+      ]
+    },
+    {
+      "endpoint": "products",
+      "family": "browse",
+      "result_shape": "connection",
+      "returns": "ProductsCollectionSegment",
+      "resultType": "Product",
+      "args": [
+        {
+          "name": "skip",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "take",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "where",
+          "type": "ProductFilterInput",
+          "required": false
+        },
+        {
+          "name": "order",
+          "type": "[ProductSortInput!]",
+          "required": false
+        }
+      ],
+      "enumArgs": {},
+      "selectableFields": [
+        "sellEndDate",
+        "discontinuedDate",
+        "productId",
+        "name",
+        "productNumber",
+        "listPrice",
+        "standardCost",
+        "color",
+        "size",
+        "weight",
+        "makeFlag",
+        "finishedGoodsFlag",
+        "sellStartDate",
+        "isCurrentlySold",
+        "productSubcategoryId"
+      ],
+      "filterableFields": [
+        {
+          "path": "color",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "discontinuedDate",
+          "valueKind": "date",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "finishedGoodsFlag",
+          "valueKind": "boolean",
+          "operators": [
+            "eq",
+            "neq"
+          ]
+        },
+        {
+          "path": "listPrice",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "makeFlag",
+          "valueKind": "boolean",
+          "operators": [
+            "eq",
+            "neq"
+          ]
+        },
+        {
+          "path": "name",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "productId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "productNumber",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "productSubcategoryId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "sellEndDate",
+          "valueKind": "date",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "sellStartDate",
+          "valueKind": "date",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "size",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "standardCost",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "subcategory.name",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "subcategory.productCategoryId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "subcategory.productSubcategoryId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "weight",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        }
+      ],
+      "sortableFields": [
+        "color",
+        "discontinuedDate",
+        "finishedGoodsFlag",
+        "listPrice",
+        "makeFlag",
+        "name",
+        "productId",
+        "productNumber",
+        "productSubcategoryId",
+        "sellEndDate",
+        "sellStartDate",
+        "size",
+        "standardCost",
+        "subcategory.name",
+        "subcategory.productCategoryId",
+        "subcategory.productSubcategoryId",
+        "weight"
+      ]
+    },
+    {
+      "endpoint": "revenueByPeriod",
+      "family": "aggregation",
+      "result_shape": "list",
+      "returns": "[PeriodRevenue!]!",
+      "resultType": "PeriodRevenue",
+      "args": [
+        {
+          "name": "from",
+          "type": "LocalDate!",
+          "required": true
+        },
+        {
+          "name": "to",
+          "type": "LocalDate!",
+          "required": true
+        },
+        {
+          "name": "interval",
+          "type": "Interval!",
+          "required": false
+        }
+      ],
+      "enumArgs": {
+        "interval": [
+          "MONTH",
+          "QUARTER",
+          "YEAR"
+        ]
+      },
+      "selectableFields": [
+        "year",
+        "period",
+        "label",
+        "revenue",
+        "orderCount"
+      ],
+      "filterableFields": [],
+      "sortableFields": []
+    },
+    {
+      "endpoint": "salesByCategory",
+      "family": "aggregation",
+      "result_shape": "list",
+      "returns": "[CategorySales!]!",
+      "resultType": "CategorySales",
+      "args": [
+        {
+          "name": "from",
+          "type": "LocalDate!",
+          "required": true
+        },
+        {
+          "name": "to",
+          "type": "LocalDate!",
+          "required": true
+        }
+      ],
+      "enumArgs": {},
+      "selectableFields": [
+        "categoryId",
+        "category",
+        "revenue",
+        "unitsSold"
+      ],
+      "filterableFields": [],
+      "sortableFields": []
+    },
+    {
+      "endpoint": "salesByTerritory",
+      "family": "aggregation",
+      "result_shape": "list",
+      "returns": "[TerritorySales!]!",
+      "resultType": "TerritorySales",
+      "args": [
+        {
+          "name": "from",
+          "type": "LocalDate!",
+          "required": true
+        },
+        {
+          "name": "to",
+          "type": "LocalDate!",
+          "required": true
+        }
+      ],
+      "enumArgs": {},
+      "selectableFields": [
+        "territoryId",
+        "territory",
+        "group",
+        "revenue",
+        "orderCount"
+      ],
+      "filterableFields": [],
+      "sortableFields": []
+    },
+    {
+      "endpoint": "salesPeople",
+      "family": "browse",
+      "result_shape": "connection",
+      "returns": "SalesPeopleCollectionSegment",
+      "resultType": "SalesPerson",
+      "args": [
+        {
+          "name": "skip",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "take",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "where",
+          "type": "SalesPersonFilterInput",
+          "required": false
+        },
+        {
+          "name": "order",
+          "type": "[SalesPersonSortInput!]",
+          "required": false
+        }
+      ],
+      "enumArgs": {},
+      "selectableFields": [
+        "businessEntityId",
+        "territoryId",
+        "salesQuota",
+        "bonus",
+        "commissionPct",
+        "salesYtd",
+        "salesLastYear"
+      ],
+      "filterableFields": [
+        {
+          "path": "bonus",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "businessEntityId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "commissionPct",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "person.businessEntityId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "person.firstName",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "person.lastName",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "person.middleName",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "person.personType",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "salesLastYear",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "salesQuota",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "salesYtd",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "territory.countryRegionCode",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "territory.group",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "territory.name",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "territory.salesLastYear",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "territory.salesYtd",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "territory.territoryId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "territoryId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        }
+      ],
+      "sortableFields": [
+        "bonus",
+        "businessEntityId",
+        "commissionPct",
+        "person.businessEntityId",
+        "person.firstName",
+        "person.lastName",
+        "person.middleName",
+        "person.personType",
+        "salesLastYear",
+        "salesQuota",
+        "salesYtd",
+        "territory.countryRegionCode",
+        "territory.group",
+        "territory.name",
+        "territory.salesLastYear",
+        "territory.salesYtd",
+        "territory.territoryId",
+        "territoryId"
+      ]
+    },
+    {
+      "endpoint": "salesSummary",
+      "family": "aggregation",
+      "result_shape": "object",
+      "returns": "SalesSummary!",
+      "resultType": "SalesSummary",
+      "args": [
+        {
+          "name": "from",
+          "type": "LocalDate!",
+          "required": true
+        },
+        {
+          "name": "to",
+          "type": "LocalDate!",
+          "required": true
+        }
+      ],
+      "enumArgs": {},
+      "selectableFields": [
+        "totalRevenue",
+        "orderCount",
+        "averageOrderValue",
+        "customerCount",
+        "from",
+        "to"
+      ],
+      "filterableFields": [],
+      "sortableFields": []
+    },
+    {
+      "endpoint": "territories",
+      "family": "browse",
+      "result_shape": "connection",
+      "returns": "TerritoriesCollectionSegment",
+      "resultType": "Territory",
+      "args": [
+        {
+          "name": "skip",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "take",
+          "type": "Int",
+          "required": false
+        },
+        {
+          "name": "where",
+          "type": "TerritoryFilterInput",
+          "required": false
+        },
+        {
+          "name": "order",
+          "type": "[TerritorySortInput!]",
+          "required": false
+        }
+      ],
+      "enumArgs": {},
+      "selectableFields": [
+        "territoryId",
+        "name",
+        "countryRegionCode",
+        "group",
+        "salesYtd",
+        "salesLastYear"
+      ],
+      "filterableFields": [
+        {
+          "path": "countryRegionCode",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "group",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "name",
+          "valueKind": "string",
+          "operators": [
+            "contains",
+            "endsWith",
+            "eq",
+            "in",
+            "ncontains",
+            "nendsWith",
+            "neq",
+            "nin",
+            "nstartsWith",
+            "startsWith"
+          ]
+        },
+        {
+          "path": "salesLastYear",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "salesYtd",
+          "valueKind": "number",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        },
+        {
+          "path": "territoryId",
+          "valueKind": "integer",
+          "operators": [
+            "eq",
+            "gt",
+            "gte",
+            "in",
+            "lt",
+            "lte",
+            "neq",
+            "ngt",
+            "ngte",
+            "nin",
+            "nlt",
+            "nlte"
+          ]
+        }
+      ],
+      "sortableFields": [
+        "countryRegionCode",
+        "group",
+        "name",
+        "salesLastYear",
+        "salesYtd",
+        "territoryId"
+      ]
+    },
+    {
+      "endpoint": "topCustomers",
+      "family": "aggregation",
+      "result_shape": "list",
+      "returns": "[CustomerRevenue!]!",
+      "resultType": "CustomerRevenue",
+      "args": [
+        {
+          "name": "from",
+          "type": "LocalDate!",
+          "required": true
+        },
+        {
+          "name": "to",
+          "type": "LocalDate!",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "Int!",
+          "required": false
+        }
+      ],
+      "enumArgs": {},
+      "selectableFields": [
+        "customerId",
+        "customerName",
+        "territory",
+        "revenue",
+        "orderCount"
+      ],
+      "filterableFields": [],
+      "sortableFields": []
+    },
+    {
+      "endpoint": "topProducts",
+      "family": "aggregation",
+      "result_shape": "list",
+      "returns": "[ProductSales!]!",
+      "resultType": "ProductSales",
+      "args": [
+        {
+          "name": "from",
+          "type": "LocalDate!",
+          "required": true
+        },
+        {
+          "name": "to",
+          "type": "LocalDate!",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "Int!",
+          "required": false
+        }
+      ],
+      "enumArgs": {},
+      "selectableFields": [
+        "productId",
+        "productName",
+        "productNumber",
+        "category",
+        "revenue",
+        "unitsSold"
+      ],
+      "filterableFields": [],
+      "sortableFields": []
+    }
+  ]
+}
