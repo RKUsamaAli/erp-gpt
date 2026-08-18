@@ -9,7 +9,7 @@ import { routes } from './app.routes';
 import { CHAT_SERVICE } from './core/chat-service';
 import { CHAT_STORE } from './core/chat-store';
 import { LocalChatStore } from './core/local-chat-store';
-import { MockChatService } from './core/mock-chat-service';
+import { HttpChatService } from './core/http-chat-service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -19,10 +19,9 @@ export const appConfig: ApplicationConfig = {
     // withComponentInputBinding lets route params arrive as component inputs,
     // so no component has to inject ActivatedRoute to read :chatId.
     provideRouter(routes, withComponentInputBinding()),
-    // The two seams. Both are one line to swap when the backend catches up:
-    // MockChatService -> HttpChatService (agent/), LocalChatStore -> ApiChatStore
-    // (ChatThread/ChatTurn entities).
-    { provide: CHAT_SERVICE, useClass: MockChatService },
+    // The two seams. Chat answers use the deployed GraphQL API; workspace
+    // storage remains local until ChatThread/ChatTurn entities land.
+    { provide: CHAT_SERVICE, useClass: HttpChatService },
     { provide: CHAT_STORE, useClass: LocalChatStore },
   ],
 };

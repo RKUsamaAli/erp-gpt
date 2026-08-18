@@ -7,11 +7,11 @@ The human interface to the ERP. Someone types "who were our biggest customers la
 
 ## The One Rule
 
-**This app never composes a query.** It hands a question to a `ChatService` and renders whatever structured blocks come back. Turning a question into an API call is the agent's job, and only the API knows about data ([`docs/architecture.md`](../docs/architecture.md)).
+**Chat components never compose GraphQL.** They hand a question to `ChatService` and render structured answer blocks. For deployed API testing, `HttpChatService` maps known prompts to static GraphQL documents and sends user values through `variables`, never string concatenation.
 
 ```text
-ChatComponent -> CHAT_SERVICE -> MockChatService  canned ERP answers today
-                            -> HttpChatService  uses configured /api/chat later
+ChatComponent -> CHAT_SERVICE -> HttpChatService  deployed GraphQL answers
+                            -> MockChatService  local canned answers for tests
 
 SidebarComponent -> CHAT_STORE -> LocalChatStore  localStorage today
                              -> ApiChatStore    when ChatThread / ChatTurn land
@@ -48,25 +48,25 @@ The build output folder is `chat-app`, the Angular project name, not `web`, the 
 Local environment config lives in [`src/environments/environment.ts`](src/environments/environment.ts):
 
 ```ts
-apiUrl: 'http://localhost:5000'
+apiUrl: 'https://erpgpt-api-xh5w.onrender.com'
 ```
 
-Production config lives in [`src/environments/environment.prod.ts`](src/environments/environment.prod.ts). Replace `https://your-api-domain.com` with the deployed API URL when available.
+Production config lives in [`src/environments/environment.prod.ts`](src/environments/environment.prod.ts). It uses the same deployed API URL.
 
-`HttpChatService` uses the configured base URL for the future chat endpoint:
+`HttpChatService` uses the configured base URL for the deployed GraphQL endpoint:
 
 ```text
-${environment.apiUrl}/api/chat
+${environment.apiUrl}/graphql
 ```
 
-The current backend endpoint in the solution is still GraphQL at `http://localhost:5000/graphql`; `/api/chat` is the future chat endpoint.
+For local API testing, change `apiUrl` to `http://localhost:5000`; the frontend will call `${environment.apiUrl}/graphql`.
 
 ## Guard Rail
 
-This must print nothing. It checks that the UI still does not compose GraphQL or render model output as raw HTML:
+This should only show intentional GraphQL usage inside `HttpChatService` and comments/docs. It should not show raw HTML rendering or component-level query construction:
 
 ```bash
-grep -rniE "graphql|bypassSecurityTrustHtml|innerHTML|example\.com" src/ | grep -vE ':[0-9]+:\s*(\*|//|/\*)'
+grep -rniE "bypassSecurityTrustHtml|innerHTML|example\.com" src/
 ```
 
 ## Layout
@@ -76,7 +76,7 @@ src/app/
   core/
     chat-service.ts       interface + CHAT_SERVICE token
     mock-chat-service.ts  canned answers and simulated streaming
-    http-chat-service.ts  configured /api/chat implementation stub
+    http-chat-service.ts  deployed GraphQL implementation
     chat-store.ts         interface + CHAT_STORE token
     local-chat-store.ts   projects/chats in localStorage
     theme.service.ts      data-bs-theme on html
@@ -113,7 +113,7 @@ A chat is the only addressable thing: `/chat/:chatId`. A chat's project is a pro
 
 `npm run build` copies `index.html` to `404.html` so deep links survive a refresh on GitHub Pages.
 
-Type `fail` as a question to exercise the error path.
+The deployed API can sleep after idle on the free Render plan, so the first real request may take around a minute.
 
 ## Not Built Yet
 

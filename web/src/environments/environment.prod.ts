@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://your-api-domain.com',
+  apiUrl: 'https://erpgpt-api-xh5w.onrender.com',
 };

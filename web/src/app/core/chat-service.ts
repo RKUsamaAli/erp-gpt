@@ -5,10 +5,9 @@ import { AnswerChunk, AskRequest } from '../models/chat.models';
 /**
  * The seam between the UI and whatever answers questions.
  *
- * The UI must never compose a query itself — only the API knows about data
- * (docs/architecture.md). Today the only implementation is MockChatService;
- * when the Phase 4 agent exists (agent/README.md) HttpChatService takes over
- * and the only edit is the provider line in app.config.ts.
+ * Components hand questions to this interface and render structured answer
+ * blocks. Transport details, GraphQL documents, variables, and response
+ * formatting stay behind the implementation.
  *
  * Returns an Observable rather than a Promise so that unsubscribing cancels
  * the work — that is what makes the Stop button possible, and HttpClient
