@@ -4,6 +4,7 @@
 
 The human interface to the ERP. Someone types "who were our biggest customers last quarter?" and the answer appears here: no SQL, no schema knowledge, no clicking through screens.
 
+Live web app: [https://erpgpt-web.vercel.app/](https://erpgpt-web.vercel.app/)
 
 ## The One Rule
 
