@@ -89,10 +89,33 @@ public sealed record EndpointSpec
     [JsonPropertyName("returns")]          public string Returns { get; init; } = string.Empty;
     [JsonPropertyName("resultType")]       public string ResultType { get; init; } = string.Empty;
     [JsonPropertyName("args")]             public List<ArgSpec> Args { get; init; } = [];
+    /// <summary>Scalar fields on the result type — what the builder may select.</summary>
     [JsonPropertyName("selectableFields")] public List<string> SelectableFields { get; init; } = [];
+
+    /// <summary>What `where` actually accepts, as dotted paths with their legal operators.
+    /// Derived from the FilterInput type, NOT from output fields — the two differ: `territoryId`
+    /// is filterable but not selected, and `territory.name` is reachable only by nesting.</summary>
+    [JsonPropertyName("filterableFields")] public List<FilterFieldSpec> FilterableFields { get; init; } = [];
+
+    /// <summary>What `order` accepts, as dotted paths.</summary>
+    [JsonPropertyName("sortableFields")] public List<string> SortableFields { get; init; } = [];
+
+    /// <summary>Enum-valued arguments and their legal values, e.g. interval -> MONTH|QUARTER|YEAR.</summary>
+    [JsonPropertyName("enumArgs")] public Dictionary<string, List<string>> EnumArgs { get; init; } = new();
 
     public IEnumerable<string> RequiredArgs => Args.Where(a => a.Required).Select(a => a.Name);
     public bool Accepts(string arg) => Args.Any(a => a.Name == arg);
+    public FilterFieldSpec? Filter(string path) =>
+        FilterableFields.FirstOrDefault(f => string.Equals(f.Path, path, StringComparison.Ordinal));
+}
+
+public sealed record FilterFieldSpec
+{
+    [JsonPropertyName("path")]      public string Path { get; init; } = string.Empty;
+    /// <summary>integer | number | boolean | date | string — what the filter value must be.
+    /// Read from the operation input's own `eq` argument, so it tracks the schema.</summary>
+    [JsonPropertyName("valueKind")] public string ValueKind { get; init; } = "unknown";
+    [JsonPropertyName("operators")] public List<string> Operators { get; init; } = [];
 }
 
 public sealed record ArgSpec

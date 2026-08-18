@@ -5,66 +5,44 @@ namespace ErpGpt.Agent.Contracts;
 
 /// <summary>
 /// The structured interpretation the model produces. It is DATA, not a command —
-/// nothing here reaches the API until <see cref="Services.QueryPlanValidator"/> has
-/// approved it (decision D3, principle 2).
+/// nothing here reaches the API until QueryPlanValidator has approved it (D3, principle 2).
 ///
-/// One shape covers all three endpoint families. The model never writes GraphQL and
-/// never picks field names: it names an endpoint and fills that endpoint's parameters,
-/// which is exactly the job docs/architecture.md assigns it.
+/// One shape covers all three endpoint families. The model never writes GraphQL and never
+/// picks field names: it names an endpoint and fills that endpoint's parameters, which is
+/// exactly the job docs/architecture.md assigns it.
 /// </summary>
 public sealed record QueryPlan
 {
-    [JsonPropertyName("planVersion")]
-    public string PlanVersion { get; init; } = "1.0";
+    [JsonPropertyName("planVersion")] public string? PlanVersion { get; init; }
 
-    /// <summary>Exact GraphQL field name. Validated against the catalog — never trusted.</summary>
-    [JsonPropertyName("endpoint")]
-    public string Endpoint { get; init; } = string.Empty;
+    /// <summary>Exact GraphQL field name. Checked against the catalog — never trusted.</summary>
+    [JsonPropertyName("endpoint")] public string Endpoint { get; init; } = string.Empty;
 
     /// <summary>
-    /// Required by the aggregation family. Carried as either a symbolic preset or a
-    /// literal window — never both. The model does NO date arithmetic; deterministic
-    /// code resolves presets, because date maths is what an 8B model is worst at.
+    /// Required by the aggregation family. Either a symbolic preset or a literal window,
+    /// never both. The model does NO date arithmetic; deterministic code resolves presets,
+    /// because date maths is what a small model is worst at.
     /// </summary>
-    [JsonPropertyName("dateRange")]
-    public DateRangeSpec? DateRange { get; init; }
+    [JsonPropertyName("dateRange")] public DateRangeSpec? DateRange { get; init; }
 
-    [JsonPropertyName("id")]
-    public int? Id { get; init; }
+    /// <summary>Detail family only.</summary>
+    [JsonPropertyName("id")] public int? Id { get; init; }
 
-    [JsonPropertyName("filters")]
-    public List<PlanFilter> Filters { get; init; } = [];
+    [JsonPropertyName("filters")] public List<PlanFilter>? Filters { get; init; }
 
-    [JsonPropertyName("sort")]
-    public PlanSort? Sort { get; init; }
+    [JsonPropertyName("sort")] public PlanSort? Sort { get; init; }
 
-    /// <summary>One plan field for "how many". The builder emits `take` or `limit`
-    /// per family — mirroring both API names into the plan hands the model a
-    /// distinction it gets wrong roughly half the time.</summary>
-    [JsonPropertyName("limit")]
-    public int? Limit { get; init; }
+    /// <summary>One plan field for "how many". The builder emits `take` or `limit` per family —
+    /// mirroring both API names into the plan hands the model a distinction it gets wrong
+    /// about half the time.</summary>
+    [JsonPropertyName("limit")] public int? Limit { get; init; }
 
-    public static QueryPlan? Parse(string json, out string? error)
-    {
-        error = null;
-        try
-        {
-            var plan = JsonSerializer.Deserialize<QueryPlan>(json, Options);
-            if (plan is null) error = "Query plan JSON deserialised to null.";
-            return plan;
-        }
-        catch (JsonException ex)
-        {
-            error = $"Query plan is not valid JSON: {ex.Message}";
-            return null;
-        }
-    }
+    /// <summary>Browse paging offset.</summary>
+    [JsonPropertyName("skip")] public int? Skip { get; init; }
 
-    public static readonly JsonSerializerOptions Options = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        ReadCommentHandling = JsonCommentHandling.Skip,
-    };
+    /// <summary>Enum-valued arguments, e.g. revenueByPeriod's interval = MONTH|QUARTER|YEAR.
+    /// Validated per endpoint against the catalog's enumArgs.</summary>
+    [JsonPropertyName("options")] public Dictionary<string, string>? Options { get; init; }
 }
 
 public sealed record DateRangeSpec
@@ -76,13 +54,13 @@ public sealed record DateRangeSpec
 
 public sealed record PlanFilter
 {
-    [JsonPropertyName("field")]    public string Field { get; init; } = string.Empty;
-    [JsonPropertyName("operator")] public string Operator { get; init; } = "eq";
+    [JsonPropertyName("field")]    public string? Field { get; init; }
+    [JsonPropertyName("operator")] public string? Operator { get; init; }
     [JsonPropertyName("value")]    public JsonElement Value { get; init; }
 }
 
 public sealed record PlanSort
 {
-    [JsonPropertyName("field")]     public string Field { get; init; } = string.Empty;
-    [JsonPropertyName("direction")] public string Direction { get; init; } = "DESC";
+    [JsonPropertyName("field")]     public string? Field { get; init; }
+    [JsonPropertyName("direction")] public string? Direction { get; init; }
 }
