@@ -368,6 +368,24 @@
         border-bottom: 1px solid var(--border);
       }
     }
+  
+    .switch {
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+      margin-bottom: 4px;
+    }
+    .switch-label {
+      font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--text-muted); font-weight: 600; margin-right: 2px;
+    }
+    .switch a {
+      font-size: 0.8rem; text-decoration: none; color: var(--text);
+      border: 1px solid var(--border); background: #fff;
+      padding: 5px 11px; border-radius: 999px; transition: border-color .2s, background .2s;
+    }
+    .switch a:hover { border-color: rgba(47,138,126,.45); background: var(--accent-soft); }
+    .switch a[aria-current="page"] { background: var(--accent-soft); border-color: rgba(47,138,126,.45); color: #1f6f65; font-weight: 600; }
+    .switch a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
   </style>
 </head>
 <body>
@@ -379,7 +397,7 @@
           <span>Demo</span>
         </div>
         <a class="nav-btn" href="execution-flow.html">Execution Flow</a>
-        <a class="nav-btn active" href="meeting-2026-08-14.html" aria-current="page">Meeting Notes</a>
+        <a class="nav-btn active" href="meeting-2026-08-18.html">Meeting Notes</a>
         <a class="nav-btn primary" href="index.html">← Back to chat</a>
       </div>
     </aside>
@@ -392,6 +410,11 @@
 
       <main class="content">
         <div class="doc">
+
+          <div class="switch"><span class="switch-label">Meetings</span>
+          <a href="meeting-2026-08-18.html">18 Aug · Validation standup</a>
+          <a href="meeting-2026-08-14.html" aria-current="page">14 Aug · Embedding & workflow</a>
+          </div>
 
           <p class="doc-intro">
             Filed from the call notes. Decisions that change
