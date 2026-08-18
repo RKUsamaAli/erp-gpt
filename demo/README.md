@@ -6,6 +6,7 @@ Interactive HTML demo of the chat UI and execution flow.
 |---|---|
 | Chat | [`index.html`](index.html) |
 | Execution Flow | [`execution-flow.html`](execution-flow.html) |
+| Meeting Notes — 18 Aug 2026 | [`meeting-2026-08-18.html`](meeting-2026-08-18.html) |
 | Meeting Notes — 14 Aug 2026 | [`meeting-2026-08-14.html`](meeting-2026-08-14.html) |
 
 Meeting pages mirror the Markdown in `docs/meetings/`. Edit the Markdown
